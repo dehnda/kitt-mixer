@@ -337,10 +337,10 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
         <button className="kitt-button green" onClick={loadConfig}>
           SAVE CONFIG
         </button>
-        <button className="kitt-button" onClick={onCalibrate}>
+        <button className="kitt-button yellow" onClick={onCalibrate}>
           CALIBRATE
         </button>
-        <button className="kitt-button" onClick={() => setShowPurgeConfirm(true)}>
+        <button className="kitt-button yellow" onClick={() => setShowPurgeConfirm(true)}>
           PURGE ALL
         </button>
         <button className="kitt-button" onClick={onBack}>
@@ -416,7 +416,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                 SAVE
               </button>
               <button
-                className="kitt-button large"
+                className="kitt-button yellow large"
                 onClick={() => {
                   closeEditModal();
                   if (editingPump) openCalibrateMode(editingPump);
@@ -496,7 +496,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
             <div className="modal-actions calibrate-actions">
               <button
-                className="kitt-button green"
+                className="kitt-button yellow"
                 onClick={runCalibrationTest}
                 disabled={calibrating !== null}
               >
@@ -510,7 +510,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                 CALCULATE
               </button>
               <button
-                className="kitt-button"
+                className="kitt-button green"
                 onClick={saveCalibrationRate}
                 disabled={calculatedRate === 0 || saving}
               >

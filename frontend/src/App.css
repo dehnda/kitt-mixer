@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Arial', monospace;
   box-shadow: 0 4px 0 #aa3300, 0 5px 2px rgba(0, 0, 0, 0.5);
   background: #ff5500;
   color: #000;
@@ -95,6 +95,22 @@
   box-shadow: 0 2px 0 #990000, 0 3px 2px rgba(0, 0, 0, 0.5);
 }
 
+.kitt-button.yellow {
+  background: #ffaa00;
+  box-shadow: 0 4px 0 #aa6600, 0 5px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.yellow:hover {
+  background: #ffcc33;
+  box-shadow: 0 4px 0 #aa6600, 0 5px 2px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 170, 0, 0.6);
+}
+
+.kitt-button.yellow:active {
+  background: #dd8800;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #aa6600, 0 3px 2px rgba(0, 0, 0, 0.5);
+}
+
 .kitt-button.gray, .kitt-button:disabled {
   background: #333;
   color: #666;
@@ -124,7 +140,7 @@
   box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  font-family: 'Courier New', monospace;
+  font-family: 'Roboto', monospace;
   color: #ff0000;
   font-size: 9px;
   text-shadow: 0 0 5px #ff0000;

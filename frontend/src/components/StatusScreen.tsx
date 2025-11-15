@@ -100,10 +100,10 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
         <button className="kitt-button" onClick={onRefresh}>
           REFRESH
         </button>
-        <button className="kitt-button" onClick={handleDiagnostics}>
+        <button className="kitt-button orange" onClick={handleDiagnostics}>
           DIAGNOSTICS
         </button>
-        <button className="kitt-button green" onClick={handleTestAll} disabled={testing}>
+        <button className="kitt-button yellow" onClick={handleTestAll} disabled={testing}>
           {testing ? 'TESTING...' : 'TEST ALL'}
         </button>
         <button className="kitt-button" onClick={onBack}>

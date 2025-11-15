@@ -18,6 +18,8 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
     ? cocktails.filter(c => c.can_make)
     : cocktails;
 
+  const hasAvailableCocktails = cocktails.some(c => c.can_make);
+
   const handleSelect = (cocktail: Cocktail) => {
     if (selectedCocktail?.name === cocktail.name) {
       // Toggle off if clicking the same cocktail
@@ -41,7 +43,7 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
   return (
     <div className="cocktail-list-page">
       <div className="display-screen">
-        <div className="display-title">COCKTAIL SELECTOR</div>
+        <div className="display-title">K.I.T.T</div>
 
         <div className={`cocktail-content ${showIngredients ? 'with-details' : ''}`}>
           <div className="cocktail-grid">
@@ -89,13 +91,17 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
           ALL
         </button>
         <button
-          className={`kitt-button small narrow ${filter === 'available' ? '' : 'gray'}`}
+          className={`kitt-button small narrow ${
+            filter === 'available'
+              ? (hasAvailableCocktails ? 'green' : 'red')
+              : (hasAvailableCocktails ? 'green' : 'red')
+          }`}
           onClick={() => setFilter('available')}
         >
           AVAILABLE
         </button>
         <button
-          className="kitt-button small wide"
+          className="kitt-button small wide orange"
           onClick={onConfigOpen}
         >
           CONFIG

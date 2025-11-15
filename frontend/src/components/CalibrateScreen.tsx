@@ -187,7 +187,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
 
       <div className="calibrate-control-buttons">
         <button
-          className="kitt-button green"
+          className="kitt-button yellow"
           onClick={runTest}
           disabled={!selectedPump || testing}
         >
@@ -201,7 +201,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
           CALCULATE
         </button>
         <button
-          className="kitt-button"
+          className="kitt-button green"
           onClick={saveRate}
           disabled={calculatedRate === 0 || saving}
         >

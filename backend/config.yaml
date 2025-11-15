@@ -6,6 +6,7 @@ conversion:
   cl_to_ml: 10
 liquid_flow_rates:
   Calvados: 10.0
+  Champagne: 10.7
   Gin: 10.0
   Juice: 12.0
   Liqueur: 8.0
@@ -21,7 +22,7 @@ pumps:
   pin: 2
 - id: 2
   liquid: Champagne
-  ml_per_second: 10.0
+  ml_per_second: 10.7
   pin: 3
 - id: 3
   liquid: null

@@ -1,106 +1,134 @@
-.cocktail-list {
-  height: 100%;
+.cocktail-list-page {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.list-header {
-  display: flex;
-  gap: 8px;
-  align-items: stretch;
-  margin-bottom: 8px;
-}
-
-.filter-buttons {
+  gap: 6px;
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.filter-buttons .kitt-button {
-  padding: 8px;
-  font-size: 11px;
-}
-
-.config-button {
-  font-size: 18px !important;
-  padding: 0 12px !important;
-  min-width: 44px;
+  min-height: 0;
 }
 
 .cocktail-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.cocktail-card {
-  background: var(--kitt-gray);
-  border: 2px solid var(--kitt-red);
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.cocktail-card:hover {
-  background: var(--kitt-light-gray);
-  box-shadow: 0 0 15px var(--kitt-glow);
-  transform: translateY(-2px);
-}
-
-.cocktail-card:active {
-  transform: translateY(0);
-}
-
-.cocktail-card.unavailable {
-  border-color: #666;
-  opacity: 0.6;
-}
-
-.cocktail-card.unavailable .cocktail-name {
-  color: #999;
-}
-
-.cocktail-name {
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  line-height: 1.3;
-  margin-bottom: 6px;
-}
-
-.cocktail-meta {
-  display: flex;
-  flex-wrap: wrap;
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  margin-top: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding-right: 2px;
 }
 
-.tag {
-  font-size: 8px;
-  padding: 2px 6px;
-  background: rgba(255, 0, 0, 0.2);
-  border: 1px solid var(--kitt-red);
-  letter-spacing: 0.5px;
+.cocktail-item {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #660000;
+  padding: 1px 4px;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #ff0000;
+  text-shadow: 0 0 5px #ff0000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 35px;
   text-transform: uppercase;
 }
 
-.unavailable-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 7px;
+.cocktail-item:hover {
+  background: rgba(255, 100, 0, 0.3);
+  border-color: #ff6600;
+  box-shadow: 0 0 8px rgba(255, 100, 0, 0.5);
+}
+
+.cocktail-item.selected {
+  background: rgba(0, 255, 0, 0.3);
+  border-color: #00ff00;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+}
+
+.cocktail-item.unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ingredients-section {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #660000;
+  padding: 6px 8px;
+  margin-top: 6px;
+}
+
+.ingredient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ingredient-line {
+  display: flex;
+  justify-content: space-between;
   padding: 2px 4px;
-  background: #666;
-  color: #fff;
-  letter-spacing: 0.5px;
+  font-size: 8px;
+  color: #ff6666;
+}
+
+.ing-name {
+  color: #ff6666;
+  text-transform: uppercase;
+}
+
+.ing-amount {
+  color: #ff0000;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.info-title {
+  color: #ff0000;
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-align: left;
+}
+
+.progress-container {
+  height: 16px;
+  background: #000;
+  border: 1px solid #660000;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6600, #00ff00, #ffff00, #00ff00, #ff6600);
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s linear infinite;
+  width: 0%;
+  transition: width 0.3s;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+}
+
+@keyframes progress-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #00ff00;
+  font-size: 9px;
+  font-weight: bold;
+  text-shadow: 0 0 5px #000, 1px 1px 2px #000;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }

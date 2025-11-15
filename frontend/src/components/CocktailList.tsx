@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Cocktail } from '../types';
 import './CocktailList.css';
 
@@ -11,65 +10,96 @@ interface CocktailListProps {
 
 export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect, onConfigOpen }) => {
   const [filter, setFilter] = useState<'all' | 'available'>('all');
+  const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
 
   const filteredCocktails = filter === 'available'
     ? cocktails.filter(c => c.can_make)
     : cocktails;
 
+  const handleSelect = (cocktail: Cocktail) => {
+    setSelectedCocktail(cocktail);
+  };
+
+  const handleEngage = () => {
+    if (selectedCocktail && selectedCocktail.can_make) {
+      onSelect(selectedCocktail);
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 50 }}
-      transition={{ duration: 0.3 }}
-      className="cocktail-list"
-    >
-      <div className="list-header">
-        <div className="filter-buttons">
-          <button
-            className={`kitt-button ${filter === 'all' ? '' : 'secondary'}`}
-            onClick={() => setFilter('all')}
-          >
-            ALL ({cocktails.length})
-          </button>
-          <button
-            className={`kitt-button ${filter === 'available' ? '' : 'secondary'}`}
-            onClick={() => setFilter('available')}
-          >
-            AVAILABLE ({cocktails.filter(c => c.can_make).length})
-          </button>
+    <div className="cocktail-list-page">
+      <div className="display-screen">
+        <div className="display-title">COCKTAIL SELECTOR</div>
+
+        <div className="cocktail-grid">
+          {filteredCocktails.map((cocktail) => (
+            <div
+              key={cocktail.name}
+              className={`cocktail-item ${selectedCocktail?.name === cocktail.name ? 'selected' : ''} ${!cocktail.can_make ? 'unavailable' : ''}`}
+              onClick={() => handleSelect(cocktail)}
+            >
+              {cocktail.name.toUpperCase()}
+            </div>
+          ))}
         </div>
+
+        {selectedCocktail && (
+          <div className="ingredients-section">
+            <div className="info-title">INGREDIENTS</div>
+            <div className="ingredient-list">
+              {selectedCocktail.ingredients.map((ing, index) => (
+                <div key={index} className="ingredient-line">
+                  <span className="ing-name">{ing.ingredient.toUpperCase()}</span>
+                  <span className="ing-amount">{ing.amount} {ing.unit.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="status-row">
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+          <div className="status-light"></div>
+        </div>
+      </div>
+
+      <button
+        className={`kitt-button large ${selectedCocktail?.can_make ? 'green' : 'gray'}`}
+        onClick={handleEngage}
+        disabled={!selectedCocktail?.can_make}
+      >
+        ▶ ENGAGE
+      </button>
+
+      <div className="control-buttons">
         <button
-          className="kitt-button config-button"
-          onClick={onConfigOpen}
-          title="Configure Pumps"
+          className={`kitt-button small wide ${filter === 'all' ? '' : 'gray'}`}
+          onClick={() => setFilter('all')}
         >
-          ⚙
+          ALL
+        </button>
+        <button
+          className={`kitt-button small narrow ${filter === 'available' ? '' : 'gray'}`}
+          onClick={() => setFilter('available')}
+        >
+          AVAILABLE
+        </button>
+        <button
+          className="kitt-button small wide"
+          onClick={onConfigOpen}
+        >
+          CONFIG
+        </button>
+        <button className="kitt-button green small wide">
+          ● STATUS
         </button>
       </div>
-
-      <div className="cocktail-grid">
-        {filteredCocktails.map((cocktail, index) => (
-          <motion.div
-            key={cocktail.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className={`cocktail-card ${cocktail.can_make ? 'available' : 'unavailable'}`}
-            onClick={() => onSelect(cocktail)}
-          >
-            <div className="cocktail-name">{cocktail.name}</div>
-            <div className="cocktail-meta">
-              {cocktail.taste && <span className="tag">{cocktail.taste}</span>}
-              {cocktail.timing && <span className="tag">{cocktail.timing}</span>}
-            </div>
-            {!cocktail.can_make && (
-              <div className="unavailable-badge">UNAVAILABLE</div>
-            )}
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
+    </div>
   );
 };
-

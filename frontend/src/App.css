@@ -1,279 +1,193 @@
-/* K.I.T.T. Theme - Optimized for 480x320 touchscreen */
-:root {
-  --kitt-red: #ff0000;
-  --kitt-dark-red: #cc0000;
-  --kitt-black: #000000;
-  --kitt-gray: #1a1a1a;
-  --kitt-light-gray: #333333;
-  --kitt-text: #ff0000;
-  --kitt-glow: rgba(255, 0, 0, 0.5);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-body {
-  margin: 0;
-  font-family: 'Courier New', monospace;
-  background-color: var(--kitt-black);
-  color: var(--kitt-text);
-  overflow: hidden;
-  width: 480px;
-  height: 320px;
-}
+/* K.I.T.T. Theme - 480x320 touchscreen */
 
 .App {
   width: 480px;
   height: 320px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #000000 0%, #1a0000 100%);
+  background: #0a0a0a;
   position: relative;
   overflow: hidden;
-}
-
-/* Header */
-.App-header {
-  padding: 8px 12px;
-  background: var(--kitt-gray);
-  border-bottom: 2px solid var(--kitt-red);
-  box-shadow: 0 0 20px var(--kitt-glow);
-  z-index: 10;
-}
-
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.logo-pulse {
-  width: 12px;
-  height: 12px;
-  background: var(--kitt-red);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 10px var(--kitt-red);
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-.kitt-logo {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  text-shadow: 0 0 10px var(--kitt-red), 0 0 20px var(--kitt-red);
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 5px var(--kitt-red), 0 0 10px var(--kitt-red); }
-  to { text-shadow: 0 0 10px var(--kitt-red), 0 0 20px var(--kitt-red), 0 0 30px var(--kitt-dark-red); }
-}
-
-.subtitle {
-  font-size: 9px;
-  letter-spacing: 2px;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-/* Main Content */
-.App-main {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 8px;
-  position: relative;
-}
-
-.App-main::-webkit-scrollbar {
-  width: 6px;
-}
-
-.App-main::-webkit-scrollbar-track {
-  background: var(--kitt-gray);
-}
-
-.App-main::-webkit-scrollbar-thumb {
-  background: var(--kitt-red);
-  border-radius: 3px;
-}
-
-/* Footer */
-.App-footer {
-  padding: 6px 12px;
-  background: var(--kitt-gray);
-  border-top: 1px solid var(--kitt-red);
-  font-size: 9px;
-  z-index: 10;
-}
-
-.status-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
+  padding: 6px;
   gap: 6px;
-  letter-spacing: 1px;
 }
 
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--kitt-red);
-  box-shadow: 0 0 5px var(--kitt-red);
-}
-
-.status-indicator.active {
-  animation: blink 1s ease-in-out infinite;
-}
-
-.status-indicator.inactive {
-  background: #666;
-  box-shadow: none;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.status-item.mixing {
-  animation: flash 0.5s ease-in-out infinite;
-}
-
-@keyframes flash {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* Buttons */
-.kitt-button {
-  background: var(--kitt-gray);
-  color: var(--kitt-red);
-  border: 2px solid var(--kitt-red);
-  padding: 10px 20px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-  text-transform: uppercase;
-  min-height: 44px;
-}
-
-.kitt-button:hover {
-  background: var(--kitt-red);
-  color: var(--kitt-black);
-  box-shadow: 0 0 20px var(--kitt-red);
-  transform: scale(1.05);
-}
-
-.kitt-button:active {
-  transform: scale(0.98);
-}
-
-.kitt-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.kitt-button.secondary {
-  border-color: var(--kitt-light-gray);
-  color: var(--kitt-light-gray);
-  box-shadow: none;
-}
-
-.kitt-button.secondary:hover {
-  background: var(--kitt-light-gray);
-  color: var(--kitt-red);
-}
-
-/* Loading & Error States */
-.loading-screen,
-.error-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 20px;
-}
-
-.kitt-loading,
-.kitt-error {
-  font-size: 16px;
-  letter-spacing: 3px;
-  animation: glow 1.5s ease-in-out infinite alternate;
-}
-
-/* Scanner Animation */
-.scanner-overlay {
+/* Scanner animation */
+.scanner {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.scanner-line {
-  position: absolute;
-  width: 100%;
+  right: 0;
   height: 3px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--kitt-red) 50%,
-    transparent 100%
-  );
-  box-shadow: 0 0 10px var(--kitt-red);
-  animation: scan 3s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, #ff0000, transparent);
+  animation: scan 2s linear infinite;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 @keyframes scan {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-/* Responsive touch targets */
-@media (pointer: coarse) {
-  .kitt-button {
-    min-height: 44px;
-    min-width: 44px;
-  }
+/* Button Styles */
+.kitt-button {
+  border: 1px solid #000;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+  font-size: 11px;
+  padding: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 0 #aa3300, 0 5px 2px rgba(0, 0, 0, 0.5);
+  background: #ff5500;
+  color: #000;
 }
 
-/* Grid layouts for small screen */
-.grid-2 {
+.kitt-button:hover {
+  background: #ff7722;
+  box-shadow: 0 4px 0 #aa3300, 0 5px 2px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 85, 0, 0.6);
+}
+
+.kitt-button:active {
+  background: #dd4400;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #aa3300, 0 3px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.green {
+  background: #88dd00;
+  box-shadow: 0 4px 0 #558800, 0 5px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.green:hover {
+  background: #aaffaa;
+  box-shadow: 0 4px 0 #558800, 0 5px 2px rgba(0, 0, 0, 0.5), 0 0 15px rgba(136, 221, 0, 0.6);
+}
+
+.kitt-button.green:active {
+  background: #66bb00;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #558800, 0 3px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.red {
+  background: #ff2200;
+  box-shadow: 0 4px 0 #990000, 0 5px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.red:hover {
+  background: #ff4433;
+  box-shadow: 0 4px 0 #990000, 0 5px 2px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 34, 0, 0.6);
+}
+
+.kitt-button.red:active {
+  background: #cc1100;
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #990000, 0 3px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.gray, .kitt-button:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 #111, 0 5px 2px rgba(0, 0, 0, 0.5);
+}
+
+.kitt-button.large {
+  height: 45px;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.kitt-button.small {
+  height: 35px;
+  font-size: 9px;
+}
+
+/* Display screen */
+.display-screen {
+  background: #000;
+  border: 1px solid #ff0000;
+  border-radius: 2px;
+  padding: 8px;
+  flex: 1;
+  min-height: 0;
+  box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Courier New', monospace;
+  color: #ff0000;
+  font-size: 9px;
+  text-shadow: 0 0 5px #ff0000;
+}
+
+.display-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  letter-spacing: 3px;
+  text-align: center;
+  color: #ff0000;
+  text-shadow: 0 0 8px #ff0000;
+  text-transform: uppercase;
+}
+
+/* Control buttons row */
+.control-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 1.5fr 1fr 1.5fr 1.5fr;
+  gap: 4px;
 }
 
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+/* Status indicators */
+.status-row {
+  display: flex;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.status-light {
+  flex: 1;
+  height: 10px;
+  background: #111;
+  border: 1px solid #333;
+}
+
+.status-light.active {
+  background: linear-gradient(90deg, #ff6600, #00ff00, #ff6600);
+  background-size: 200% 100%;
+  animation: status-pulse 1.5s linear infinite;
+  box-shadow: 0 0 8px rgba(255, 150, 0, 0.8);
+}
+
+@keyframes status-pulse {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff0000;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3333;
 }

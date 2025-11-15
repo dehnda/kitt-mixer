@@ -21,11 +21,15 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack }) => {
   const [saving, setSaving] = useState(false);
   const [calibrating, setCalibrating] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingPump, setEditingPump] = useState<Pump | null>(null);
+  const [editLiquid, setEditLiquid] = useState<string>('');
+  const [editFlowRate, setEditFlowRate] = useState<number>(0);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     loadConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadConfig = async () => {
@@ -137,6 +141,54 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack }) => {
     }
   };
 
+  const openEditModal = (pump: Pump) => {
+    setEditingPump(pump);
+    setEditLiquid(pump.liquid || '');
+    setEditFlowRate(pump.ml_per_second);
+  };
+
+  const closeEditModal = () => {
+    setEditingPump(null);
+    setEditLiquid('');
+    setEditFlowRate(0);
+  };
+
+  const adjustFlowRate = (delta: number) => {
+    setEditFlowRate(Math.max(0.1, Math.round((editFlowRate + delta) * 10) / 10));
+  };
+
+  const saveEditedPump = async () => {
+    if (!editingPump) return;
+
+    try {
+      setSaving(true);
+      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${editingPump.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          liquid: editLiquid || null,
+          ml_per_second: editFlowRate
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update pump');
+
+      setPumps(pumps.map(p =>
+        p.id === editingPump.id
+          ? { ...p, liquid: editLiquid || null, ml_per_second: editFlowRate }
+          : p
+      ));
+
+      closeEditModal();
+      setError(null);
+    } catch (err) {
+      setError('Failed to save pump configuration');
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <motion.div
@@ -150,116 +202,143 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack }) => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-      transition={{ duration: 0.3 }}
-      className="config-screen"
-    >
-      <div className="config-header">
-        <h2 className="config-title">SYSTEM CONFIGURATION</h2>
-        {error && <div className="config-error">{error}</div>}
-      </div>
+    <div className="config-screen">
+      <div className="display-screen">
+        <div className="display-title">PUMP CONFIGURATION</div>
 
-      <div className="pumps-config">
-        {pumps.map((pump) => (
-          <motion.div
-            key={pump.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: pump.id * 0.05 }}
-            className={`pump-config-card ${calibrating === pump.id ? 'calibrating' : ''}`}
-          >
-            <div className="pump-config-header">
-              <span className="pump-config-id">PUMP {pump.id}</span>
-              <span className="pump-config-pin">PIN {pump.pin}</span>
-            </div>
-
-            <div className="pump-config-row">
-              <label className="config-label">LIQUID:</label>
-              <select
-                className="config-select"
-                value={pump.liquid || ''}
-                onChange={(e) => handleLiquidChange(pump.id, e.target.value)}
-                disabled={saving || calibrating === pump.id}
-              >
-                <option value="">-- EMPTY --</option>
-                {liquids.map((liquid) => (
-                  <option key={liquid} value={liquid}>
-                    {liquid}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pump-config-row">
-              <label className="config-label">FLOW RATE:</label>
-              <div className="flow-rate-input-group">
-                <input
-                  type="number"
-                  className="config-input"
-                  value={pump.ml_per_second}
-                  onChange={(e) => handleFlowRateChange(pump.id, e.target.value)}
-                  onBlur={() => saveFlowRate(pump.id)}
-                  min="0.1"
-                  step="0.1"
-                  disabled={saving || calibrating === pump.id}
-                />
-                <span className="unit-label">ml/sec</span>
-              </div>
-            </div>
-
-            <div className="pump-config-actions">
-              {calibrating === pump.id ? (
-                <>
-                  <div className="calibrating-indicator">PUMPING...</div>
+        <div className="pump-grid">
+          {pumps.map((pump) => (
+            <div
+              key={pump.id}
+              className={`pump-card ${pump.liquid ? 'active' : ''} ${calibrating === pump.id ? 'calibrating' : ''}`}
+              onClick={() => openEditModal(pump)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="pump-number">PUMP {pump.id}</div>
+              <div className="pump-liquid">{pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}</div>
+              <div className="pump-flow">{pump.ml_per_second.toFixed(1)} ML/SEC</div>
+              <div className="pump-action">
+                {calibrating === pump.id ? (
                   <button
-                    className="kitt-button secondary small"
+                    className="pump-test-btn calibrating"
                     onClick={stopCalibration}
                   >
                     STOP
                   </button>
-                </>
-              ) : (
-                <>
+                ) : (
                   <button
-                    className="kitt-button secondary small"
-                    onClick={() => startCalibration(pump.id, 5)}
-                    disabled={saving || calibrating !== null}
+                    className="pump-test-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startCalibration(pump.id, 5);
+                    }}
+                    disabled={calibrating !== null}
                   >
-                    TEST 5s
+                    TEST
                   </button>
-                  <button
-                    className="kitt-button secondary small"
-                    onClick={() => startCalibration(pump.id, 10)}
-                    disabled={saving || calibrating !== null}
-                  >
-                    TEST 10s
-                  </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
-          </motion.div>
-        ))}
+          ))}
+        </div>
+
+        <div className="config-instruction">
+          SELECT PUMP TO CONFIGURE LIQUID AND FLOW RATE
+        </div>
       </div>
 
-      <div className="config-actions">
-        <button
-          className="kitt-button secondary"
-          onClick={onBack}
-          disabled={saving || calibrating !== null}
-        >
+      <div className="config-control-buttons">
+        <button className="kitt-button green" onClick={loadConfig}>
+          SAVE CONFIG
+        </button>
+        <button className="kitt-button" onClick={() => {}}>
+          PURGE ALL
+        </button>
+        <button className="kitt-button" onClick={() => {}}>
+          RESET
+        </button>
+        <button className="kitt-button" onClick={onBack}>
           BACK
         </button>
-        <button
-          className="kitt-button"
-          onClick={loadConfig}
-          disabled={saving || calibrating !== null}
-        >
-          RELOAD CONFIG
-        </button>
       </div>
-    </motion.div>
+
+      {editingPump && (
+        <div className="modal-overlay" onClick={closeEditModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">CONFIGURE PUMP {editingPump.id}</div>
+
+            <div className="modal-section">
+              <div className="modal-label">LIQUID:</div>
+              <div className="liquid-selector">
+                <button
+                  className={`liquid-option ${editLiquid === '' ? 'selected' : ''}`}
+                  onClick={() => setEditLiquid('')}
+                >
+                  EMPTY
+                </button>
+                {liquids.map((liquid) => (
+                  <button
+                    key={liquid}
+                    className={`liquid-option ${editLiquid === liquid ? 'selected' : ''}`}
+                    onClick={() => setEditLiquid(liquid)}
+                  >
+                    {liquid.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="modal-section">
+              <div className="modal-label">FLOW RATE:</div>
+              <div className="flow-rate-control">
+                <button
+                  className="flow-btn"
+                  onClick={() => adjustFlowRate(-1)}
+                >
+                  -1.0
+                </button>
+                <button
+                  className="flow-btn"
+                  onClick={() => adjustFlowRate(-0.1)}
+                >
+                  -0.1
+                </button>
+                <div className="flow-value">
+                  {editFlowRate.toFixed(1)} ML/SEC
+                </div>
+                <button
+                  className="flow-btn"
+                  onClick={() => adjustFlowRate(0.1)}
+                >
+                  +0.1
+                </button>
+                <button
+                  className="flow-btn"
+                  onClick={() => adjustFlowRate(1)}
+                >
+                  +1.0
+                </button>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="kitt-button green large"
+                onClick={saveEditedPump}
+                disabled={saving}
+              >
+                SAVE
+              </button>
+              <button
+                className="kitt-button red large"
+                onClick={closeEditModal}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

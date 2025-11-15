@@ -10,85 +10,69 @@ interface StatusScreenProps {
 
 export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="status-screen"
-    >
-      <div className="status-header">
-        <h2 className="status-title">SYSTEM STATUS</h2>
-      </div>
+    <div className="status-screen">
+      <div className="display-screen">
+        <div className="display-title">SYSTEM STATUS</div>
 
-      {status.is_mixing && status.current_cocktail && (
-        <div className="mixing-info">
-          <div className="mixing-title">MIXING: {status.current_cocktail}</div>
-          <div className="progress-bar">
-            <motion.div
-              className="progress-fill"
-              initial={{ width: 0 }}
-              animate={{ width: `${status.progress}%` }}
-              transition={{ duration: 0.5 }}
-            />
-            <div className="progress-text">{Math.round(status.progress)}%</div>
+        <div className="status-section">
+          <div className="section-header">SYSTEM INFORMATION</div>
+          <div className="status-info-grid">
+            <div className="status-row">
+              <span className="status-label">SYSTEM STATUS</span>
+              <span className={`status-value ${status.is_mixing ? 'warning' : 'success'}`}>
+                {status.is_mixing ? 'MIXING' : 'ONLINE'}
+              </span>
+            </div>
+            <div className="status-row">
+              <span className="status-label">ARDUINO CONNECTION</span>
+              <span className="status-value success">CONNECTED</span>
+            </div>
+            <div className="status-row">
+              <span className="status-label">COCKTAILS AVAILABLE</span>
+              <span className="status-value info">{status.pumps.filter(p => p.liquid).length} / 45</span>
+            </div>
+            <div className="status-row">
+              <span className="status-label">ACTIVE PUMPS</span>
+              <span className="status-value info">{status.pumps.filter(p => p.is_active).length} / {status.pumps.length}</span>
+            </div>
           </div>
-          <div className="mixing-animation">
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="mixing-bar"
-                animate={{
-                  scaleY: [1, 1.5, 1],
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                }}
-              />
+        </div>
+
+        <div className="status-section">
+          <div className="section-header">PUMP STATUS</div>
+          <div className="pump-status-list">
+            {status.pumps.map((pump) => (
+              <div key={pump.id} className="pump-status-row">
+                <span className="pump-status-label">PUMP {pump.id} - {pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}</span>
+                <span className={`pump-status-value ${
+                  !pump.liquid ? 'error' : 
+                  pump.liquid.toLowerCase().includes('low') ? 'warning' : 
+                  'success'
+                }`}>
+                  {!pump.liquid ? 'NOT CONFIGURED' : 
+                   pump.liquid.toLowerCase().includes('low') ? 'LOW LIQUID' : 
+                   'READY'}
+                </span>
+              </div>
             ))}
           </div>
         </div>
-      )}
-
-      {!status.is_mixing && (
-        <div className="idle-message">
-          <div className="idle-text">SYSTEM READY</div>
-          <div className="idle-subtext">AWAITING INSTRUCTIONS</div>
-        </div>
-      )}
-
-      <div className="pumps-section">
-        <h3 className="section-title">PUMP STATUS</h3>
-        <div className="pumps-grid">
-          {status.pumps.map((pump) => (
-            <div
-              key={pump.id}
-              className={`pump-card ${pump.is_active ? 'active' : ''} ${pump.liquid ? 'loaded' : 'empty'}`}
-            >
-              <div className="pump-header">
-                <span className="pump-id">PUMP {pump.id}</span>
-                {pump.is_active && <span className="pump-active">ACTIVE</span>}
-              </div>
-              <div className="pump-liquid">
-                {pump.liquid || 'EMPTY'}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
-      <div className="status-actions">
-        <button
-          className="kitt-button secondary"
-          onClick={onBack}
-          disabled={status.is_mixing}
-        >
+      <div className="status-control-buttons">
+        <button className="kitt-button">
+          REFRESH
+        </button>
+        <button className="kitt-button">
+          DIAGNOSTICS
+        </button>
+        <button className="kitt-button green">
+          TEST ALL
+        </button>
+        <button className="kitt-button" onClick={onBack}>
           BACK
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };

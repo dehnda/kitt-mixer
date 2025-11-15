@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './ConfigScreen.css';
+import { Liquid } from '../types';
 
 interface Pump {
   id: number;
   pin: number;
   liquid: string | null;
+  liquid_id?: number | null;
   ml_per_second: number;
   is_active: boolean;
 }
@@ -17,13 +19,13 @@ interface ConfigScreenProps {
 
 export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate }) => {
   const [pumps, setPumps] = useState<Pump[]>([]);
-  const [liquids, setLiquids] = useState<string[]>([]);
+  const [liquids, setLiquids] = useState<Liquid[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [calibrating, setCalibrating] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editingPump, setEditingPump] = useState<Pump | null>(null);
-  const [editLiquid, setEditLiquid] = useState<string>('');
+  const [editLiquidId, setEditLiquidId] = useState<number | null>(null);
   const [editFlowRate, setEditFlowRate] = useState<number>(0);
   const [calibratingPump, setCalibratingPump] = useState<Pump | null>(null);
   const [testDuration, setTestDuration] = useState<number>(10);
@@ -59,20 +61,19 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
     }
   };
 
-  const handleLiquidChange = async (pumpId: number, liquid: string) => {
+  const handleLiquidChange = async (pumpId: number, liquidId: number | null) => {
     try {
       setSaving(true);
       const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${pumpId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ liquid: liquid || null }),
+        body: JSON.stringify({ liquid_id: liquidId }),
       });
 
       if (!response.ok) throw new Error('Failed to update pump');
 
-      setPumps(pumps.map(p =>
-        p.id === pumpId ? { ...p, liquid: liquid || null } : p
-      ));
+      // Reload pumps to get updated liquid name
+      await loadConfig();
     } catch (err) {
       setError('Failed to update pump');
       console.error(err);
@@ -148,13 +149,13 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
   const openEditModal = (pump: Pump) => {
     setEditingPump(pump);
-    setEditLiquid(pump.liquid || '');
+    setEditLiquidId(pump.liquid_id || null);
     setEditFlowRate(pump.ml_per_second);
   };
 
   const closeEditModal = () => {
     setEditingPump(null);
-    setEditLiquid('');
+    setEditLiquidId(null);
     setEditFlowRate(0);
   };
 
@@ -171,18 +172,15 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          liquid: editLiquid || null,
+          liquid_id: editLiquidId,
           ml_per_second: editFlowRate
         }),
       });
 
       if (!response.ok) throw new Error('Failed to update pump');
 
-      setPumps(pumps.map(p =>
-        p.id === editingPump.id
-          ? { ...p, liquid: editLiquid || null, ml_per_second: editFlowRate }
-          : p
-      ));
+      // Reload pumps to get updated liquid name
+      await loadConfig();
 
       closeEditModal();
       setError(null);
@@ -357,18 +355,18 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
               <div className="modal-label">LIQUID:</div>
               <div className="liquid-selector">
                 <button
-                  className={`liquid-option ${editLiquid === '' ? 'selected' : ''}`}
-                  onClick={() => setEditLiquid('')}
+                  className={`liquid-option ${editLiquidId === null ? 'selected' : ''}`}
+                  onClick={() => setEditLiquidId(null)}
                 >
                   EMPTY
                 </button>
                 {liquids.map((liquid) => (
                   <button
-                    key={liquid}
-                    className={`liquid-option ${editLiquid === liquid ? 'selected' : ''}`}
-                    onClick={() => setEditLiquid(liquid)}
+                    key={liquid.id}
+                    className={`liquid-option ${editLiquidId === liquid.id ? 'selected' : ''}`}
+                    onClick={() => setEditLiquidId(liquid.id)}
                   >
-                    {liquid.toUpperCase()}
+                    {liquid.name.toUpperCase()}
                   </button>
                 ))}
               </div>

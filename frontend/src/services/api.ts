@@ -14,12 +14,13 @@ const apiClient = axios.create({
 export const api = {
     getCocktails: async (): Promise<Cocktail[]> => {
         const response = await apiClient.get<Cocktail[]>('/cocktails');
-        return response.data;
+        // Map is_available to can_make for backward compatibility
+        return response.data.map(c => ({ ...c, can_make: c.is_available ?? c.can_make }));
     },
 
     getAvailableCocktails: async (): Promise<Cocktail[]> => {
         const response = await apiClient.get<Cocktail[]>('/cocktails/available');
-        return response.data;
+        return response.data.map(c => ({ ...c, can_make: c.is_available ?? c.can_make }));
     },
 
     getCocktail: async (name: string): Promise<Cocktail> => {

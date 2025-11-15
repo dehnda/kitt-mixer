@@ -4,13 +4,19 @@ export interface Ingredient {
     unit: string;
 }
 
+export interface Liquid {
+    id: number;
+    name: string;
+}
+
 export interface Cocktail {
     name: string;
     timing?: string;
     taste?: string;
     ingredients: Ingredient[];
     preparation?: string;
-    can_make?: boolean;
+    is_available?: boolean;
+    can_make?: boolean;  // Alias for is_available
     missing_ingredients?: string[];
 }
 
@@ -26,6 +32,7 @@ export interface PumpStatus {
     id: number;
     pin: number;
     liquid: string | null;
+    liquid_id?: number | null;
     ml_per_second: number;
     is_active: boolean;
 }

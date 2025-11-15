@@ -8,7 +8,7 @@ router = APIRouter(prefix="/pumps", tags=["Pumps"])
 
 class PumpConfigUpdate(BaseModel):
     """Update pump configuration"""
-    liquid: Optional[str] = None
+    liquid_id: Optional[int] = None
     ml_per_second: Optional[float] = None
 
 
@@ -19,8 +19,13 @@ class PumpTestRequest(BaseModel):
 
 @router.get("", response_model=List[Pump])
 async def get_pumps(db_service):
-    """Get all pump configurations"""
+    """Get all pump configurations with liquid IDs"""
     pumps_data = db_service.get_pumps()
+    # Add liquid_id to each pump if not present
+    for pump in pumps_data:
+        if 'liquid_id' not in pump and pump.get('liquid'):
+            # Backward compatibility: get ID from name
+            pump['liquid_id'] = db_service.get_id_for_liquid(pump['liquid'])
     return [Pump(**pump) for pump in pumps_data]
 
 
@@ -38,7 +43,7 @@ async def get_pump(pump_id: int, db_service):
 
 @router.put("/{pump_id}", response_model=ApiResponse)
 async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
-    """Update pump configuration (liquid and/or flow rate)"""
+    """Update pump configuration (liquid ID and/or flow rate)"""
     # Verify pump exists
     pump = db_service.get_pump_by_id(pump_id)
     if not pump:
@@ -48,6 +53,23 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
         )
 
     # Update pump configuration
+    success = True
+    if update.liquid_id is not None:
+        success = db_service.update_pump_liquid(pump_id, update.liquid_id)
+    if success and update.ml_per_second is not None:
+        success = db_service.update_pump_flow_rate(pump_id, update.ml_per_second)
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update pump configuration"
+        )
+
+    liquid_name = db_service.get_liquid_by_id(update.liquid_id) if update.liquid_id else "pump"
+    return ApiResponse(
+        success=True,
+        message=f"Pump {pump_id} ({liquid_name}) updated successfully"
+    )
     if update.liquid is not None:
         success = db_service.update_pump_liquid(pump_id, update.liquid if update.liquid else None)
         if not success:

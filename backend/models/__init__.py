@@ -39,11 +39,12 @@ class Pump(BaseModel):
     pin: int
     ml_per_second: float
     liquid: Optional[str] = None
+    liquid_id: Optional[int] = None
 
 
 class PumpUpdate(BaseModel):
     """Update pump liquid assignment"""
-    liquid: Optional[str] = None
+    liquid_id: Optional[int] = None
 
 
 class MakeCocktailRequest(BaseModel):

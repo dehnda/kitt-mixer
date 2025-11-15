@@ -23,19 +23,16 @@ async def lifespan(app: FastAPI):
     print("Starting CocktailMixer Backend...")
 
     # Initialize services
-    cocktails_path = os.getenv("COCKTAILS_DB_PATH", "../db/cocktails.yaml")
-    config_path = os.getenv("CONFIG_PATH", "./config.yaml")
+    db_path = os.getenv("DB_PATH", "./database/cocktails.db")
 
-    db_service = DatabaseService(cocktails_path, config_path)
+    db_service = DatabaseService(db_path)
 
     # Load initial data
     db_service.load_cocktails()
-    config = db_service.load_config()
 
-    # Initialize Arduino service
-    arduino_config = config.get('arduino', {})
-    arduino_port = os.getenv("ARDUINO_PORT", arduino_config.get('port', 'COM3'))
-    arduino_baudrate = int(os.getenv("ARDUINO_BAUDRATE", arduino_config.get('baudrate', 9600)))
+    # Initialize Arduino service - get settings from database
+    arduino_port = os.getenv("ARDUINO_PORT") or db_service.db.get_setting('arduino_port', 'COM3')
+    arduino_baudrate = int(os.getenv("ARDUINO_BAUDRATE") or db_service.db.get_setting('arduino_baudrate', '9600'))
 
     arduino_service = ArduinoService(arduino_port, arduino_baudrate)
 

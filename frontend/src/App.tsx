@@ -61,6 +61,11 @@ function App() {
     setScreen('config');
   };
 
+  const handleConfigClose = () => {
+    setScreen('list');
+    loadCocktails(); // Reload cocktails to update can_make status
+  };
+
   const handleStatusOpen = () => {
     setScreen('status');
   };
@@ -108,7 +113,7 @@ function App() {
           )}
           {screen === 'config' && (
             <ConfigScreen
-              onBack={() => setScreen('list')}
+              onBack={handleConfigClose}
               onCalibrate={() => setScreen('calibrate')}
             />
           )}

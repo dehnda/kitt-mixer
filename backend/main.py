@@ -104,9 +104,10 @@ cocktails.get_available_cocktails.__defaults__ = (Depends(get_mixer_service),)
 cocktails.get_cocktail.__defaults__ = (None, Depends(get_db_service))
 cocktails.make_cocktail.__defaults__ = (None, None, Depends(get_mixer_service))
 
-status.get_status.__defaults__ = (Depends(get_mixer_service),)
+status.get_status.__defaults__ = (Depends(get_mixer_service), Depends(get_db_service), Depends(get_arduino_service))
 status.cancel_mixing.__defaults__ = (Depends(get_mixer_service),)
 status.emergency_stop.__defaults__ = (Depends(get_mixer_service),)
+status.get_diagnostics.__defaults__ = (Depends(get_db_service), Depends(get_arduino_service))
 
 liquids.get_all_liquids.__defaults__ = (Depends(get_db_service),)
 liquids.get_installed_liquids.__defaults__ = (Depends(get_db_service),)

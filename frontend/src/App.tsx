@@ -4,6 +4,7 @@ import { CocktailList } from './components/CocktailList';
 import { ConfigScreen } from './components/ConfigScreen';
 import { StatusScreen } from './components/StatusScreen';
 import { CalibrateScreen } from './components/CalibrateScreen';
+import { MixingProgress } from './components/MixingProgress';
 import { api } from './services/api';
 import { Cocktail, SystemStatus } from './types';
 
@@ -70,6 +71,15 @@ function App() {
     setScreen('status');
   };
 
+  const handleCancelMixing = async () => {
+    try {
+      await api.cancelMixing();
+      loadStatus();
+    } catch (err) {
+      console.error('Failed to cancel mixing:', err);
+    }
+  };
+
   return (
     <div className="App">
       <div className="scanner"></div>
@@ -128,6 +138,14 @@ function App() {
             <CalibrateScreen onBack={() => setScreen('config')} />
           )}
         </>
+      )}
+
+      {status?.is_mixing && status.current_cocktail && (
+        <MixingProgress
+          cocktailName={status.current_cocktail}
+          progress={status.progress || 0}
+          onCancel={handleCancelMixing}
+        />
       )}
     </div>
   );

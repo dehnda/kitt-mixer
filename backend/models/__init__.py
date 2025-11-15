@@ -54,10 +54,13 @@ class MakeCocktailRequest(BaseModel):
 
 class MixerStatus(BaseModel):
     """Current mixer status"""
-    state: MixerState
+    state: MixerState = Field(default=MixerState.IDLE)
+    is_mixing: bool = Field(default=False)
     current_cocktail: Optional[str] = None
-    progress_percent: float = Field(default=0, ge=0, le=100)
+    progress: float = Field(default=0, ge=0, le=100)
     error_message: Optional[str] = None
+    arduino_connected: bool = Field(default=False)
+    pumps: List[Pump] = Field(default_factory=list)
 
 
 class ApiResponse(BaseModel):

@@ -18,6 +18,7 @@ class MixerService:
         self.error_message: Optional[str] = None
         self.mixing_thread: Optional[threading.Thread] = None
         self.cancel_flag = False
+        self.simulation_mode = not arduino_service.is_connected  # Auto-enable if no Arduino
 
     def get_status(self) -> Dict:
         """Get current mixer status"""
@@ -167,45 +168,56 @@ class MixerService:
                 amount = ingredient['amount']
                 unit = ingredient['unit']
 
-                # Find pump for this liquid
-                if liquid not in pumps:
-                    print(f"Warning: No pump found for {liquid}, skipping")
-                    continue
+                # Update progress at start of ingredient
+                self.progress_percent = (idx / total_steps) * 100
 
-                pump = pumps[liquid]
+                if self.simulation_mode:
+                    # Simulation mode - just wait without Arduino
+                    print(f"[SIMULATION] Dispensing {amount} {unit} of {liquid}")
+                    time.sleep(2)  # Simulate 2 seconds per ingredient
+                else:
+                    # Real mode - use Arduino
+                    # Find pump for this liquid
+                    if liquid not in pumps:
+                        print(f"Warning: No pump found for {liquid}, skipping")
+                        continue
 
-                # Convert to ml
-                ml = self.db.convert_to_ml(amount, unit) * size_multiplier
+                    pump = pumps[liquid]
 
-                # Calculate duration
-                duration_ms = self.arduino.calculate_duration_ms(ml, pump['ml_per_second'])
+                    # Convert to ml
+                    ml = self.db.convert_to_ml(amount, unit) * size_multiplier
 
-                # Start pump
-                print(f"Dispensing {ml}ml of {liquid} (pump {pump['id']}) for {duration_ms}ms")
-                success = self.arduino.start_pump(pump['id'], duration_ms)
+                    # Calculate duration
+                    duration_ms = self.arduino.calculate_duration_ms(ml, pump['ml_per_second'])
 
-                if not success:
-                    raise Exception(f"Failed to start pump {pump['id']}")
+                    # Start pump
+                    print(f"Dispensing {ml}ml of {liquid} (pump {pump['id']}) for {duration_ms}ms")
+                    success = self.arduino.start_pump(pump['id'], duration_ms)
 
-                # Wait for pump to finish (with some buffer)
-                wait_time = duration_ms / 1000.0 + 0.5
-                time.sleep(wait_time)
+                    if not success:
+                        raise Exception(f"Failed to start pump {pump['id']}")
 
-                # Update progress
+                    # Wait for pump to finish (with some buffer)
+                    wait_time = duration_ms / 1000.0 + 0.5
+                    time.sleep(wait_time)
+
+                # Update progress after ingredient
                 self.progress_percent = ((idx + 1) / total_steps) * 100
 
             # Mixing complete
             self.state = MixerState.IDLE
             self.current_cocktail = None
             self.progress_percent = 100.0
-            print(f"Cocktail '{cocktail_name}' completed!")
+            mode_str = "[SIMULATION]" if self.simulation_mode else ""
+            print(f"{mode_str} Cocktail '{cocktail_name}' completed!")
 
         except Exception as e:
             self.state = MixerState.ERROR
             self.error_message = str(e)
             print(f"Error mixing cocktail: {e}")
-            # Try to stop all pumps on error
-            self.arduino.stop_all_pumps()
+            # Try to stop all pumps on error (only if not in simulation mode)
+            if not self.simulation_mode:
+                self.arduino.stop_all_pumps()
 
     def cancel_mixing(self) -> bool:
         """Cancel current mixing operation"""
@@ -213,7 +225,8 @@ class MixerService:
             return False
 
         self.cancel_flag = True
-        self.arduino.stop_all_pumps()
+        if not self.simulation_mode:
+            self.arduino.stop_all_pumps()
 
         # Wait for thread to finish
         if self.mixing_thread and self.mixing_thread.is_alive():
@@ -227,7 +240,8 @@ class MixerService:
 
     def emergency_stop(self):
         """Emergency stop - immediately stop all pumps"""
-        self.arduino.stop_all_pumps()
+        if not self.simulation_mode:
+            self.arduino.stop_all_pumps()
         self.cancel_flag = True
         self.state = MixerState.IDLE
         self.current_cocktail = None

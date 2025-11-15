@@ -1,15 +1,37 @@
 from fastapi import APIRouter
-from models import MixerStatus, ApiResponse
+from models import MixerStatus, ApiResponse, Pump
 from typing import List
 
 router = APIRouter(prefix="/status", tags=["Status"])
 
 
 @router.get("", response_model=MixerStatus)
-async def get_status(mixer_service):
+async def get_status(mixer_service, db_service, arduino_service):
     """Get current mixer status"""
     status_data = mixer_service.get_status()
-    return MixerStatus(**status_data)
+    pumps_data = db_service.get_pumps()
+
+    # Convert pump dicts to Pump objects
+    pumps = [
+        Pump(
+            id=p['id'],
+            pin=p['pin'],
+            ml_per_second=p['ml_per_second'],
+            liquid=p.get('liquid'),
+            liquid_id=p.get('liquid_id')
+        )
+        for p in pumps_data
+    ]
+
+    return MixerStatus(
+        state=status_data['state'],
+        is_mixing=status_data['state'] == 'mixing',
+        current_cocktail=status_data.get('current_cocktail'),
+        progress=status_data.get('progress_percent', 0),
+        error_message=status_data.get('error_message'),
+        arduino_connected=arduino_service.is_connected,
+        pumps=pumps
+    )
 
 
 @router.post("/cancel", response_model=ApiResponse)
@@ -46,7 +68,7 @@ async def get_diagnostics(db_service, arduino_service):
     try:
         # Check database
         try:
-            pumps = db_service.get_all_pumps()
+            pumps = db_service.get_pumps()
             db_ok = True
         except Exception:
             db_ok = False

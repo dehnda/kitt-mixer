@@ -38,6 +38,10 @@ export const api = {
         return response.data;
     },
 
+    cancelMixing: async (): Promise<void> => {
+        await apiClient.post('/status/cancel');
+    },
+
     stopMixing: async (): Promise<void> => {
         await apiClient.post('/status/stop');
     },

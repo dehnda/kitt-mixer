@@ -31,6 +31,8 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   const [testDuration, setTestDuration] = useState<number>(10);
   const [measuredVolume, setMeasuredVolume] = useState<number>(0);
   const [calculatedRate, setCalculatedRate] = useState<number>(0);
+  const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
+  const [purgeMessage, setPurgeMessage] = useState<string | null>(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -338,7 +340,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
         <button className="kitt-button" onClick={onCalibrate}>
           CALIBRATE
         </button>
-        <button className="kitt-button" onClick={() => {}}>
+        <button className="kitt-button" onClick={() => setShowPurgeConfirm(true)}>
           PURGE ALL
         </button>
         <button className="kitt-button" onClick={onBack}>
@@ -519,6 +521,70 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                 onClick={closeCalibrateMode}
               >
                 BACK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPurgeConfirm && (
+        <div className="modal-overlay" onClick={() => setShowPurgeConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">CONFIRM PURGE</div>
+            <div className="modal-message">
+              PURGE ALL PUMPS TO CLEAR LINES?
+              <br />
+              THIS WILL RUN ALL PUMPS FOR 5 SECONDS
+            </div>
+            <div className="modal-actions">
+              <button
+                className="kitt-button red large"
+                onClick={async () => {
+                  setShowPurgeConfirm(false);
+                  try {
+                    setSaving(true);
+                    const response = await fetch(`${API_BASE_URL}/api/v1/pumps/purge-all`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ duration_seconds: 5 }),
+                    });
+                    if (!response.ok) throw new Error('Purge failed');
+                    const data = await response.json();
+                    setPurgeMessage(data.message || 'All pumps purged successfully');
+                  } catch (err) {
+                    console.error('Purge all failed:', err);
+                    setPurgeMessage('Failed to purge pumps');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={saving}
+              >
+                {saving ? 'PURGING...' : 'CONFIRM'}
+              </button>
+              <button
+                className="kitt-button large"
+                onClick={() => setShowPurgeConfirm(false)}
+                disabled={saving}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {purgeMessage && (
+        <div className="modal-overlay" onClick={() => setPurgeMessage(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-title">PURGE COMPLETE</div>
+            <div className="modal-message">{purgeMessage}</div>
+            <div className="modal-actions">
+              <button
+                className="kitt-button green large"
+                onClick={() => setPurgeMessage(null)}
+              >
+                OK
               </button>
             </div>
           </div>

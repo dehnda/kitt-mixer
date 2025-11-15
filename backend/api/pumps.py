@@ -151,3 +151,73 @@ async def update_pump_liquid(pump_id: int, update: PumpUpdate, db_service):
         message=f"Pump {pump_id} updated successfully",
         data={"pump_id": pump_id, "liquid": update.liquid}
     )
+
+
+@router.post("/test-all", response_model=ApiResponse)
+async def test_all_pumps(request: PumpTestRequest, db_service, arduino_service):
+    """Test all pumps sequentially"""
+    if not arduino_service.is_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Arduino not connected"
+        )
+
+    try:
+        pumps = db_service.get_all_pumps()
+        tested = 0
+
+        for pump in pumps:
+            try:
+                arduino_service.start_pump(pump['id'])
+                tested += 1
+                # Small delay between pumps
+                import time
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"Failed to test pump {pump['id']}: {e}")
+
+        return ApiResponse(
+            success=True,
+            message=f"Tested {tested}/{len(pumps)} pumps for {request.duration_seconds} seconds each"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to test all pumps: {str(e)}"
+        )
+
+
+@router.post("/purge-all", response_model=ApiResponse)
+async def purge_all_pumps(request: PumpTestRequest, db_service, arduino_service):
+    """Purge all pumps with assigned liquids to clear lines"""
+    if not arduino_service.is_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Arduino not connected"
+        )
+
+    try:
+        pumps = db_service.get_all_pumps()
+        purged = 0
+
+        for pump in pumps:
+            # Only purge pumps with assigned liquids
+            if pump.get('liquid_id'):
+                try:
+                    arduino_service.start_pump(pump['id'])
+                    purged += 1
+                    # Small delay between pumps
+                    import time
+                    time.sleep(0.5)
+                except Exception as e:
+                    print(f"Failed to purge pump {pump['id']}: {e}")
+
+        return ApiResponse(
+            success=True,
+            message=f"Purged {purged} pumps for {request.duration_seconds} seconds each"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to purge all pumps: {str(e)}"
+        )

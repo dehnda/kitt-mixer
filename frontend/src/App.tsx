@@ -118,7 +118,11 @@ function App() {
             />
           )}
           {screen === 'status' && status && (
-            <StatusScreen status={status} onBack={() => setScreen('list')} />
+            <StatusScreen
+              status={status}
+              onBack={() => setScreen('list')}
+              onRefresh={loadCocktails}
+            />
           )}
           {screen === 'calibrate' && (
             <CalibrateScreen onBack={() => setScreen('config')} />

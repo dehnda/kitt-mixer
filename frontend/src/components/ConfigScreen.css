@@ -1,0 +1,193 @@
+.config-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.config-header {
+  border-bottom: 1px solid var(--kitt-red);
+  padding-bottom: 8px;
+}
+
+.config-title {
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--kitt-red);
+  margin-bottom: 4px;
+}
+
+.config-error {
+  font-size: 10px;
+  color: #ff6666;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.config-instructions {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid var(--kitt-red);
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.instruction-item {
+  font-size: 9px;
+  letter-spacing: 1px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.pumps-config {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.pump-config-card {
+  background: var(--kitt-gray);
+  border: 2px solid var(--kitt-red);
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.pump-config-card.calibrating {
+  border-color: #ffff00;
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+  animation: pump-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes pump-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.pump-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--kitt-light-gray);
+}
+
+.pump-config-id {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.pump-config-pin {
+  font-size: 9px;
+  opacity: 0.7;
+  letter-spacing: 1px;
+}
+
+.pump-config-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.config-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  min-width: 80px;
+  color: var(--kitt-red);
+}
+
+.config-select,
+.config-input {
+  flex: 1;
+  background: var(--kitt-black);
+  color: var(--kitt-red);
+  border: 1px solid var(--kitt-red);
+  padding: 6px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  min-height: 32px;
+}
+
+.config-select:focus,
+.config-input:focus {
+  outline: none;
+  border-color: var(--kitt-red);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.config-select:disabled,
+.config-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.flow-rate-input-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flow-rate-input-group .config-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.unit-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.pump-config-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.calibrating-indicator {
+  flex: 1;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #ffff00;
+  animation: blink 0.5s ease-in-out infinite;
+}
+
+.kitt-button.small {
+  padding: 6px 10px;
+  font-size: 9px;
+  min-height: 32px;
+}
+
+.config-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--kitt-red);
+}
+
+.config-actions .kitt-button {
+  font-size: 11px;
+  padding: 8px;
+}
+
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 14px;
+  letter-spacing: 3px;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}

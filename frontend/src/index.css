@@ -1,0 +1,21 @@
+/* K.I.T.T. Global Styles */
+body {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
+  color: #ff0000;
+  overflow: hidden;
+}
+
+code {
+  font-family: 'Courier New', monospace;
+}
+
+#root {
+  width: 480px;
+  height: 320px;
+  margin: 0 auto;
+}
+

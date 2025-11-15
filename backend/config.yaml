@@ -1,0 +1,49 @@
+arduino:
+  baudrate: 9600
+  port: COM3
+  timeout: 2
+conversion:
+  cl_to_ml: 10
+liquid_flow_rates:
+  Calvados: 10.0
+  Gin: 10.0
+  Juice: 12.0
+  Liqueur: 8.0
+  Rum: 10.0
+  Soda: 15.0
+  Tequila: 10.0
+  Vodka: 10.0
+  Whiskey: 9.5
+pumps:
+- id: 1
+  liquid: Calvados
+  ml_per_second: 10.0
+  pin: 2
+- id: 2
+  liquid: Champagne
+  ml_per_second: 10.0
+  pin: 3
+- id: 3
+  liquid: null
+  ml_per_second: 10.0
+  pin: 4
+- id: 4
+  liquid: null
+  ml_per_second: 10.0
+  pin: 5
+- id: 5
+  liquid: null
+  ml_per_second: 10.0
+  pin: 6
+- id: 6
+  liquid: null
+  ml_per_second: 10.0
+  pin: 7
+- id: 7
+  liquid: null
+  ml_per_second: 10.0
+  pin: 8
+- id: 8
+  liquid: null
+  ml_per_second: 10.0
+  pin: 9

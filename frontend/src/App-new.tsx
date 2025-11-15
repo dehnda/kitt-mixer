@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import './App-new.css';
 import { CocktailList } from './components/CocktailList';
 import { ConfigScreen } from './components/ConfigScreen';
 import { StatusScreen } from './components/StatusScreen';
-import { CalibrateScreen } from './components/CalibrateScreen';
 import { api } from './services/api';
 import { Cocktail, SystemStatus } from './types';
 
-type Screen = 'list' | 'config' | 'status' | 'calibrate';
+type Screen = 'list' | 'config' | 'status';
 
-function App() {
+function AppNew() {
   const [screen, setScreen] = useState<Screen>('list');
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [status, setStatus] = useState<SystemStatus | null>(null);
@@ -107,16 +106,10 @@ function App() {
             />
           )}
           {screen === 'config' && (
-            <ConfigScreen
-              onBack={() => setScreen('list')}
-              onCalibrate={() => setScreen('calibrate')}
-            />
+            <ConfigScreen onBack={() => setScreen('list')} />
           )}
           {screen === 'status' && status && (
             <StatusScreen status={status} onBack={() => setScreen('list')} />
-          )}
-          {screen === 'calibrate' && (
-            <CalibrateScreen onBack={() => setScreen('config')} />
           )}
         </>
       )}
@@ -124,4 +117,4 @@ function App() {
   );
 }
 
-export default App;
+export default AppNew;

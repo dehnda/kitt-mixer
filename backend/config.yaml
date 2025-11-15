@@ -5,13 +5,17 @@ arduino:
 conversion:
   cl_to_ml: 10
 liquid_flow_rates:
+  Aperol: 10.0
   Calvados: 10.0
+  Campari: 10.0
   Champagne: 10.7
   Gin: 10.0
   Juice: 12.0
+  Lime juice: 10.0
   Liqueur: 8.0
   Rum: 10.0
   Soda: 15.0
+  Sweet Vermouth: 10.0
   Tequila: 10.0
   Vodka: 10.0
   Whiskey: 9.5
@@ -25,26 +29,26 @@ pumps:
   ml_per_second: 10.7
   pin: 3
 - id: 3
-  liquid: null
+  liquid: Lime juice
   ml_per_second: 10.0
   pin: 4
 - id: 4
-  liquid: null
+  liquid: Vodka
   ml_per_second: 10.0
   pin: 5
 - id: 5
-  liquid: null
+  liquid: Aperol
   ml_per_second: 10.0
   pin: 6
 - id: 6
-  liquid: null
+  liquid: Gin
   ml_per_second: 10.0
   pin: 7
 - id: 7
-  liquid: null
+  liquid: Sweet Vermouth
   ml_per_second: 10.0
   pin: 8
 - id: 8
-  liquid: null
+  liquid: Campari
   ml_per_second: 10.0
   pin: 9

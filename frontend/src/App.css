@@ -1,8 +1,8 @@
-/* K.I.T.T. Theme - 480x320 touchscreen */
+/* K.I.T.T. Theme - 320x480 touchscreen (Portrait) */
 
 .App {
-  width: 480px;
-  height: 320px;
+  width: 320px;
+  height: 480px;
   display: flex;
   flex-direction: column;
   background: #0a0a0a;
@@ -147,10 +147,10 @@
 }
 
 .display-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
-  margin-bottom: 8px;
-  letter-spacing: 3px;
+  margin-bottom: 6px;
+  letter-spacing: 2px;
   text-align: center;
   color: #ff0000;
   text-shadow: 0 0 8px #ff0000;
@@ -160,7 +160,8 @@
 /* Control buttons row */
 .control-buttons {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1.5fr 1.5fr;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 4px;
 }
 

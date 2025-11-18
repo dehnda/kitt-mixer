@@ -8,6 +8,7 @@
 
 .cocktail-content {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   flex: 1;
   min-height: 0;
@@ -15,13 +16,13 @@
 }
 
 .cocktail-content.with-details .cocktail-grid {
-  flex: 0 0 60%;
+  flex: 0 0 55%;
   grid-template-columns: repeat(3, 1fr);
 }
 
 .cocktail-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -73,42 +74,45 @@
 }
 
 .ingredients-panel {
-  flex: 0 0 32%;
+  flex: 1;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #660000;
-  padding: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  animation: slideInRight 0.3s ease-out;
+  gap: 6px;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+  animation: slideInUp 0.3s ease-out;
+  max-height: 45%;
+  overflow-y: auto;
 }
 
-@keyframes slideInRight {
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 .panel-title {
   color: #ff0000;
   font-weight: bold;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 2px;
   text-align: center;
   text-shadow: 0 0 8px #ff0000;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   border-bottom: 1px solid #660000;
 }
 
 .panel-subtitle {
   color: #ff0000;
   font-weight: bold;
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 1px;
   text-shadow: 0 0 5px #ff0000;
 }
@@ -123,8 +127,8 @@
 .ingredient-line {
   display: flex;
   justify-content: space-between;
-  padding: 4px 6px;
-  font-size: 9px;
+  padding: 3px 4px;
+  font-size: 8px;
   background: rgba(255, 0, 0, 0.1);
   border: 1px solid #660000;
 }

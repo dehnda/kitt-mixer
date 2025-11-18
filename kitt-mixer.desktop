@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=K.I.T.T. Cocktail Mixer
+Comment=Launch K.I.T.T. Cocktail Mixer in Kiosk Mode
+Exec=/home/pi/CocktailMixer/start-kiosk.sh
+Terminal=false
+Categories=Application;
+X-GNOME-Autostart-enabled=true

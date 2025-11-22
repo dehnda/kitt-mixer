@@ -35,7 +35,7 @@ trap cleanup SIGINT SIGTERM
 # Kill any existing processes to avoid conflicts
 echo -e "${YELLOW}Checking for existing processes...${NC}"
 pkill -f "python.*main.py" 2>/dev/null && echo -e "${YELLOW}Killed existing backend process${NC}"
-pkill -f "serve.*build" 2>/dev/null && echo -e "${YELLOW}Killed existing frontend process${NC}"
+pkill -f "node.*react-scripts" 2>/dev/null && echo -e "${YELLOW}Killed existing frontend process${NC}"
 pkill -f "chromium.*kiosk" 2>/dev/null && echo -e "${YELLOW}Killed existing Chromium process${NC}"
 sleep 2
 
@@ -82,16 +82,12 @@ for i in {1..30}; do
     sleep 1
 done
 
-# Start frontend server (using serve package)
+# Start frontend server (using npm start for development)
 echo -e "${GREEN}Starting frontend server...${NC}"
 cd "$FRONTEND_DIR"
 
-# Check if serve is installed globally, if not use npx
-if command -v serve &> /dev/null; then
-    serve -s build -l 3000 > "$LOG_DIR/frontend.log" 2>&1 &
-else
-    npx serve -s build -l 3000 > "$LOG_DIR/frontend.log" 2>&1 &
-fi
+# Use npm start for development (has better CORS handling)
+npm start > "$LOG_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 echo -e "${GREEN}Frontend started (PID: $FRONTEND_PID)${NC}"
 

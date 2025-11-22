@@ -24,7 +24,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
@@ -33,6 +33,9 @@
   /* Firefox */
   -ms-overflow-style: none;
   /* IE and Edge */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  user-select: none;
 }
 
 .cocktail-grid::-webkit-scrollbar {
@@ -88,6 +91,8 @@
   animation: slideInUp 0.3s ease-out;
   max-height: 45%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 @keyframes slideInUp {
@@ -126,6 +131,8 @@
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 .ingredient-line {

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List, Optional
+from typing import List, Optional, Union
 from models import Pump, PumpUpdate, ApiResponse
 from pydantic import BaseModel
 
@@ -8,7 +8,7 @@ router = APIRouter(prefix="/pumps", tags=["Pumps"])
 
 class PumpConfigUpdate(BaseModel):
     """Update pump configuration"""
-    liquid_id: Optional[int] = None
+    liquid_id: Union[int, None] = None
     ml_per_second: Optional[float] = None
 
 
@@ -53,11 +53,18 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
             detail=f"Pump {pump_id} not found"
         )
 
-    # Update pump configuration
+    # Update pump configuration - check if fields were provided
     success = True
-    if update.liquid_id is not None:
+    liquid_name = None
+    
+    # Check if liquid_id was provided (even if None/null)
+    if update.model_fields_set and 'liquid_id' in update.model_fields_set:
         success = db_service.update_pump_liquid(pump_id, update.liquid_id)
-    if success and update.ml_per_second is not None:
+        if update.liquid_id:
+            liquid_name = db_service.get_liquid_by_id(update.liquid_id)
+    
+    # Check if ml_per_second was provided
+    if success and update.model_fields_set and 'ml_per_second' in update.model_fields_set:
         success = db_service.update_pump_flow_rate(pump_id, update.ml_per_second)
 
     if not success:
@@ -66,31 +73,14 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
             detail="Failed to update pump configuration"
         )
 
-    liquid_name = db_service.get_liquid_by_id(update.liquid_id) if update.liquid_id else "pump"
+    message = f"Pump {pump_id}"
+    if liquid_name:
+        message += f" ({liquid_name})"
+    message += " updated successfully"
+    
     return ApiResponse(
         success=True,
-        message=f"Pump {pump_id} ({liquid_name}) updated successfully"
-    )
-    if update.liquid is not None:
-        success = db_service.update_pump_liquid(pump_id, update.liquid if update.liquid else None)
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update pump liquid"
-            )
-
-    if update.ml_per_second is not None:
-        success = db_service.update_pump_flow_rate(pump_id, update.ml_per_second)
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update pump flow rate"
-            )
-
-    return ApiResponse(
-        success=True,
-        message=f"Pump {pump_id} updated successfully",
-        data={"pump_id": pump_id, "liquid": update.liquid, "ml_per_second": update.ml_per_second}
+        message=message
     )
 
 

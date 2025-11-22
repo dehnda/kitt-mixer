@@ -22,6 +22,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [reverseMode, setReverseMode] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -69,7 +70,10 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
       const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${selectedPump.id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duration_seconds: testDuration }),
+        body: JSON.stringify({ 
+          duration_seconds: testDuration,
+          reverse: reverseMode
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to start test');
@@ -80,6 +84,38 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
     } catch (err) {
       console.error('Failed to run test:', err);
       setTesting(false);
+    }
+  };
+
+  const stopTest = async () => {
+    if (!selectedPump) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${selectedPump.id}/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to stop pump');
+
+      setTesting(false);
+    } catch (err) {
+      console.error('Failed to stop pump:', err);
+    }
+  };
+
+  const stopAllPumps = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/stop-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Failed to stop all pumps');
+
+      setTesting(false);
+    } catch (err) {
+      console.error('Failed to stop all pumps:', err);
     }
   };
 
@@ -149,6 +185,21 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
               </div>
             </div>
 
+            <div className="calibrate-mode-toggle">
+              <button
+                className={`mode-toggle-btn ${!reverseMode ? 'active' : ''}`}
+                onClick={() => setReverseMode(false)}
+              >
+                FORWARD
+              </button>
+              <button
+                className={`mode-toggle-btn ${reverseMode ? 'active' : ''}`}
+                onClick={() => setReverseMode(true)}
+              >
+                REVERSE
+              </button>
+            </div>
+
             <div className="calibrate-controls">
               <div className="calibrate-row">
                 <span className="calibrate-label">TEST DURATION</span>
@@ -188,10 +239,16 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
       <div className="calibrate-control-buttons">
         <button
           className="kitt-button yellow"
-          onClick={runTest}
-          disabled={!selectedPump || testing}
+          onClick={testing ? stopTest : runTest}
+          disabled={!selectedPump}
         >
-          {testing ? 'RUNNING...' : 'RUN TEST'}
+          {testing ? 'STOP TEST' : 'RUN TEST'}
+        </button>
+        <button
+          className="kitt-button red"
+          onClick={stopAllPumps}
+        >
+          STOP ALL
         </button>
         <button
           className="kitt-button"

@@ -15,6 +15,7 @@ class PumpConfigUpdate(BaseModel):
 class PumpTestRequest(BaseModel):
     """Request to test pump"""
     duration_seconds: float = 10.0
+    reverse: bool = False  # Run pump in reverse (for priming/clearing)
 
 
 @router.get("", response_model=List[Pump])
@@ -97,6 +98,49 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
 async def test_pump(pump_id: int, request: PumpTestRequest, db_service, gpio_controller):
     """Test pump for calibration (run for specified duration)"""
     # Verify pump exists
+    pump = db_service.get_pump_by_id(pump_id)    
+    if not pump:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Pump {pump_id} not found"
+        )
+    
+    if not gpio_controller.is_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="GPIO Controller not connected"
+        )
+    
+    try:
+        # Calculate duration in ms
+        duration_ms = int(request.duration_seconds * 1000)
+        
+        # Start pump (with reverse if requested)
+        success = gpio_controller.start_pump(pump_id, duration_ms, reverse=request.reverse)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to start pump {pump_id}"
+            )
+
+        mode = "REVERSE" if request.reverse else "FORWARD"
+        return ApiResponse(
+            success=True,
+            message=f"Pump {pump_id} started in {mode} mode for {request.duration_seconds} seconds",
+            data={"pump_id": pump_id, "duration": request.duration_seconds, "reverse": request.reverse}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start pump: {str(e)}"
+        )
+
+
+@router.post("/{pump_id}/stop", response_model=ApiResponse)
+async def stop_pump(pump_id: int, db_service, gpio_controller):
+    """Stop a pump immediately"""
+    # Verify pump exists
     pump = db_service.get_pump_by_id(pump_id)
     if not pump:
         raise HTTPException(
@@ -111,27 +155,54 @@ async def test_pump(pump_id: int, request: PumpTestRequest, db_service, gpio_con
         )
 
     try:
-        # Calculate duration in ms
-        duration_ms = int(request.duration_seconds * 1000)
-        
-        # Start pump
-        success = gpio_controller.start_pump(pump_id, duration_ms)
+        # Stop pump
+        success = gpio_controller.stop_pump(pump_id)
         
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to start pump {pump_id}"
+                detail=f"Failed to stop pump {pump_id}"
             )
 
         return ApiResponse(
             success=True,
-            message=f"Pump {pump_id} started for {request.duration_seconds} seconds",
-            data={"pump_id": pump_id, "duration": request.duration_seconds}
+            message=f"Pump {pump_id} stopped",
+            data={"pump_id": pump_id}
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start pump: {str(e)}"
+            detail=f"Failed to stop pump: {str(e)}"
+        )
+
+
+@router.post("/stop-all", response_model=ApiResponse)
+async def stop_all_pumps(gpio_controller):
+    """Stop all pumps immediately"""
+    if not gpio_controller.is_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="GPIO Controller not connected"
+        )
+
+    try:
+        # Stop all pumps
+        success = gpio_controller.stop_all_pumps()
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to stop all pumps"
+            )
+
+        return ApiResponse(
+            success=True,
+            message="All pumps stopped"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to stop pumps: {str(e)}"
         )
 
 

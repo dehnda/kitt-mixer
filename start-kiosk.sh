@@ -32,6 +32,13 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
+# Kill any existing processes to avoid conflicts
+echo -e "${YELLOW}Checking for existing processes...${NC}"
+pkill -f "python.*main.py" 2>/dev/null && echo -e "${YELLOW}Killed existing backend process${NC}"
+pkill -f "serve.*build" 2>/dev/null && echo -e "${YELLOW}Killed existing frontend process${NC}"
+pkill -f "chromium.*kiosk" 2>/dev/null && echo -e "${YELLOW}Killed existing Chromium process${NC}"
+sleep 2
+
 # Check if backend virtual environment exists
 if [ ! -d "$BACKEND_DIR/venv" ]; then
     echo -e "${RED}Error: Backend virtual environment not found${NC}"
@@ -63,7 +70,7 @@ echo -e "${GREEN}Backend started (PID: $BACKEND_PID)${NC}"
 # Wait for backend to be ready
 echo -e "${YELLOW}Waiting for backend to start...${NC}"
 for i in {1..30}; do
-    if curl -s "$BACKEND_URL/api/status" > /dev/null 2>&1; then
+    if curl -s "$BACKEND_URL/api/v1/status" > /dev/null 2>&1; then
         echo -e "${GREEN}Backend is ready!${NC}"
         break
     fi

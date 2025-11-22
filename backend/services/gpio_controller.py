@@ -47,14 +47,17 @@ from enum import Enum
 # ============================================================================
 
 # Pump GPIO pins (BCM numbering)
-PUMP_1_PIN = 18
-PUMP_2_PIN = 19
-PUMP_3_PIN = 20
-PUMP_4_PIN = 21
-PUMP_5_PIN = 22
-PUMP_6_PIN = 23
-PUMP_7_PIN = 24
-PUMP_8_PIN = 25
+PUMP_1_PIN = 6
+PUMP_2_PIN = 5
+PUMP_3_PIN = 11
+PUMP_4_PIN = 9
+PUMP_5_PIN = 10
+PUMP_6_PIN = 4
+PUMP_7_PIN = 3
+PUMP_8_PIN = 2
+
+# Pump reverse control pin (shared for all pumps)
+PUMP_REVERSE_PIN = 23
 
 # Stepper motor GPIO pins (BCM numbering)
 STEPPER_STEP_PIN = 16
@@ -67,6 +70,11 @@ STEPPER_RPM = 60             # Rotation speed
 
 # Default pump flow rates (ml per second)
 DEFAULT_FLOW_RATE = 1.0
+
+# Pump control logic (set to False if your relays are active-LOW)
+# True = GPIO.HIGH turns pump ON, GPIO.LOW turns pump OFF (active-HIGH)
+# False = GPIO.LOW turns pump ON, GPIO.HIGH turns pump OFF (active-LOW)
+PUMP_ACTIVE_HIGH = False  # Most relay boards are active-LOW
 
 # ============================================================================
 
@@ -110,6 +118,9 @@ class GPIOController:
             8: PumpConfig(gpio_pin=PUMP_8_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 8"),
         }
         
+        # Pump reverse control pin
+        self.pump_reverse_pin = PUMP_REVERSE_PIN
+        
         # Stepper motor configuration (for mixer unit)
         self.stepper_config = StepperConfig(
             step_pin=STEPPER_STEP_PIN,
@@ -125,6 +136,7 @@ class GPIOController:
         # Pump state tracking
         self.pump_timers: Dict[int, threading.Timer] = {}
         self.pump_states: Dict[int, bool] = {}
+        self.pump_reverse_enabled = False  # Track reverse state
         
         # Stepper state
         self.stepper_running = False
@@ -148,8 +160,13 @@ class GPIOController:
             # Setup pump pins as outputs
             for pump_id, config in self.pump_configs.items():
                 GPIO.setup(config.gpio_pin, GPIO.OUT)
-                GPIO.output(config.gpio_pin, GPIO.LOW)  # Pumps off by default
+                GPIO.output(config.gpio_pin, GPIO.HIGH)  # Pumps off by default
                 self.pump_states[pump_id] = False
+            
+            # Setup pump reverse control pin
+            GPIO.setup(self.pump_reverse_pin, GPIO.OUT)
+            GPIO.output(self.pump_reverse_pin, GPIO.LOW)  # Forward direction by default
+            self.pump_reverse_enabled = False
             
             # Setup stepper motor pins
             GPIO.setup(self.stepper_config.step_pin, GPIO.OUT)
@@ -184,13 +201,14 @@ class GPIOController:
         except Exception as e:
             print(f"Error during GPIO cleanup: {e}")
 
-    def start_pump(self, pump_id: int, duration_ms: int) -> bool:
+    def start_pump(self, pump_id: int, duration_ms: int, reverse: bool = False) -> bool:
         """
         Start a pump for specified duration
 
         Args:
             pump_id: ID of the pump to activate (1-8)
             duration_ms: Duration in milliseconds
+            reverse: If True, run pump in reverse (for priming/cleaning)
 
         Returns:
             True if command successful, False otherwise
@@ -211,8 +229,17 @@ class GPIOController:
                 if pump_id in self.pump_timers:
                     self.pump_timers[pump_id].cancel()
                 
-                # Turn on pump
-                GPIO.output(config.gpio_pin, GPIO.HIGH)
+                # Set reverse direction if needed
+                if reverse:
+                    GPIO.output(self.pump_reverse_pin, GPIO.HIGH)
+                    self.pump_reverse_enabled = True
+                else:
+                    GPIO.output(self.pump_reverse_pin, GPIO.LOW)
+                    self.pump_reverse_enabled = False
+                
+                # Turn on pump (respect active logic setting)
+                pump_on_state = GPIO.HIGH if PUMP_ACTIVE_HIGH else GPIO.LOW
+                GPIO.output(config.gpio_pin, pump_on_state)
                 self.pump_states[pump_id] = True
                 
                 # Set timer to turn off pump
@@ -220,7 +247,8 @@ class GPIOController:
                 self.pump_timers[pump_id] = timer
                 timer.start()
                 
-                print(f"Pump {pump_id} ({config.name}) started for {duration_ms}ms")
+                direction_str = "reverse" if reverse else "forward"
+                print(f"Pump {pump_id} ({config.name}) started for {duration_ms}ms ({direction_str})")
                 return True
                 
             except Exception as e:
@@ -231,7 +259,9 @@ class GPIOController:
         """Callback to stop pump when timer expires"""
         try:
             config = self.pump_configs[pump_id]
-            GPIO.output(config.gpio_pin, GPIO.LOW)
+            # Turn off pump (respect active logic setting)
+            pump_off_state = GPIO.LOW if PUMP_ACTIVE_HIGH else GPIO.HIGH
+            GPIO.output(config.gpio_pin, pump_off_state)
             self.pump_states[pump_id] = False
             print(f"Pump {pump_id} ({config.name}) stopped automatically")
         except Exception as e:
@@ -264,8 +294,9 @@ class GPIOController:
                     self.pump_timers[pump_id].cancel()
                     del self.pump_timers[pump_id]
                 
-                # Turn off pump
-                GPIO.output(config.gpio_pin, GPIO.LOW)
+                # Turn off pump (respect active logic setting)
+                pump_off_state = GPIO.LOW if PUMP_ACTIVE_HIGH else GPIO.HIGH
+                GPIO.output(config.gpio_pin, pump_off_state)
                 self.pump_states[pump_id] = False
                 
                 print(f"Pump {pump_id} ({config.name}) stopped")
@@ -288,9 +319,10 @@ class GPIOController:
                     timer.cancel()
                 self.pump_timers.clear()
                 
-                # Turn off all pumps
+                # Turn off all pumps (respect active logic setting)
+                pump_off_state = GPIO.LOW if PUMP_ACTIVE_HIGH else GPIO.HIGH
                 for pump_id, config in self.pump_configs.items():
-                    GPIO.output(config.gpio_pin, GPIO.LOW)
+                    GPIO.output(config.gpio_pin, pump_off_state)
                     self.pump_states[pump_id] = False
                 
                 print("All pumps stopped")
@@ -299,6 +331,44 @@ class GPIOController:
             except Exception as e:
                 print(f"Error stopping all pumps: {e}")
                 return False
+
+    def set_pump_reverse(self, enabled: bool) -> bool:
+        """
+        Enable or disable reverse mode for all pumps
+        
+        Args:
+            enabled: True to enable reverse, False for forward
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.is_connected:
+            print("GPIO Controller not connected")
+            return False
+            
+        try:
+            GPIO.output(self.pump_reverse_pin, GPIO.HIGH if enabled else GPIO.LOW)
+            self.pump_reverse_enabled = enabled
+            direction = "reverse" if enabled else "forward"
+            print(f"Pump direction set to {direction}")
+            return True
+        except Exception as e:
+            print(f"Error setting pump reverse: {e}")
+            return False
+
+    def prime_pump(self, pump_id: int, duration_ms: int = 3000, reverse: bool = False) -> bool:
+        """
+        Prime a pump (convenience method for maintenance/testing)
+        
+        Args:
+            pump_id: ID of the pump to prime (1-8)
+            duration_ms: Duration in milliseconds (default 3 seconds)
+            reverse: If True, run in reverse to clear lines
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        return self.start_pump(pump_id, duration_ms, reverse=reverse)
 
     def start_mixer(self, duration_seconds: Optional[float] = None, direction: StepperDirection = StepperDirection.CLOCKWISE) -> bool:
         """
@@ -396,6 +466,8 @@ class GPIOController:
         """Get current GPIO controller status"""
         return {
             "connected": self.is_connected,
+            "pump_reverse_enabled": self.pump_reverse_enabled,
+            "pump_reverse_pin": self.pump_reverse_pin,
             "pumps": {
                 pump_id: {
                     "active": self.pump_states.get(pump_id, False),

@@ -90,18 +90,19 @@ class MixerService:
         cocktail_data = self.db.get_cocktail_by_name(cocktail_name)
         if not cocktail_data:
             return False, ["Cocktail not found"]
-
+        
         installed_liquid_ids = set(self.db.get_installed_liquid_ids())
 
         # Get required liquid IDs
         required_liquid_ids = set()
         ingredient_map = {}
+        
         for ing in cocktail_data.get('ingredients', []):
             liquid_id = self.db.get_id_for_liquid(ing['ingredient'])
             if liquid_id:
                 required_liquid_ids.add(liquid_id)
                 ingredient_map[liquid_id] = ing['ingredient']
-
+        
         missing_ids = required_liquid_ids - installed_liquid_ids
         missing_names = [ingredient_map[lid] for lid in missing_ids if lid in ingredient_map]
 
@@ -121,13 +122,13 @@ class MixerService:
         if self.state != MixerState.IDLE:
             self.error_message = "Mixer is busy"
             return False
-
+        
         # Check if cocktail can be made
         can_make, missing = self.can_make_cocktail(cocktail_name)
         if not can_make:
             self.error_message = f"Cannot make cocktail. Missing: {', '.join(missing)}"
             return False
-
+        
         # Start mixing in background thread
         self.cancel_flag = False
         self.mixing_thread = threading.Thread(
@@ -145,81 +146,86 @@ class MixerService:
             self.current_cocktail = cocktail_name
             self.progress_percent = 0.0
             self.error_message = None
-
+            
             # Get cocktail recipe
             cocktail_data = self.db.get_cocktail_by_name(cocktail_name)
             if not cocktail_data:
                 raise Exception("Cocktail not found")
-
+            
             ingredients = cocktail_data.get('ingredients', [])
             pumps = {p['liquid']: p for p in self.db.get_pumps() if p.get('liquid')}
 
             # Calculate steps
             total_steps = len(ingredients)
-
+            
             for idx, ingredient in enumerate(ingredients):
                 if self.cancel_flag:
                     self.state = MixerState.IDLE
                     self.current_cocktail = None
                     self.progress_percent = 0.0
                     return
-
+                
                 liquid = ingredient['ingredient']
                 amount = ingredient['amount']
                 unit = ingredient['unit']
-
+                
                 # Update progress at start of ingredient
-                self.progress_percent = (idx / total_steps) * 100                if self.simulation_mode:
+                self.progress_percent = (idx / total_steps) * 100
+                
+                if self.simulation_mode:
                     # Simulation mode - just wait without real hardware
                     print(f"[SIMULATION] Dispensing {amount} {unit} of {liquid}")
-                    time.sleep(2)  # Simulate 2 seconds per ingredient
-                else:
+                    time.sleep(2)  # Simulate 2 seconds per ingredient                else:
                     # Real mode - use GPIO controller
                     # Find pump for this liquid
                     if liquid not in pumps:
                         print(f"Warning: No pump found for {liquid}, skipping")
                         continue
-
+                    
                     pump = pumps[liquid]
 
                     # Convert to ml
                     ml = self.db.convert_to_ml(amount, unit) * size_multiplier
-
+                    
                     # Calculate duration
                     duration_ms = self.controller.calculate_duration_ms(ml, pump['id'])
-
-                    # Start pump
+                      # Start pump
                     print(f"Dispensing {ml}ml of {liquid} (pump {pump['id']}) for {duration_ms}ms")
                     success = self.controller.start_pump(pump['id'], duration_ms)
-
+                    
                     if not success:
                         raise Exception(f"Failed to start pump {pump['id']}")
-
+                    
                     # Wait for pump to finish (with some buffer)
                     wait_time = duration_ms / 1000.0 + 0.5
                     time.sleep(wait_time)
-
+                
                 # Update progress after ingredient
-                self.progress_percent = ((idx + 1) / total_steps) * 100            # Mixing complete
+                self.progress_percent = ((idx + 1) / total_steps) * 100
+            
+            # Mixing complete
             self.state = MixerState.IDLE
             self.current_cocktail = None
             self.progress_percent = 100.0
             mode_str = "[SIMULATION]" if self.simulation_mode else ""
             print(f"{mode_str} Cocktail '{cocktail_name}' completed!")
-
+            
             # Start mixer motor for final mixing (only in real mode)
             if not self.simulation_mode:
                 print("Starting mixer motor for 10 seconds...")
                 self.controller.start_mixer(duration_seconds=10.0)
-
+        
         except Exception as e:
             self.state = MixerState.ERROR
             self.error_message = str(e)
             print(f"Error mixing cocktail: {e}")
+            
             # Try to stop all pumps on error (only if not in simulation mode)
             if not self.simulation_mode:
                 self.controller.stop_all_pumps()
-                self.controller.stop_mixer()    def cancel_mixing(self) -> bool:
+                self.controller.stop_mixer()
+    
+    def cancel_mixing(self) -> bool:
         """Cancel current mixing operation"""
         if self.state != MixerState.MIXING:
             return False

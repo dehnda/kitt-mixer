@@ -42,6 +42,35 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+# ============================================================================
+# GPIO PIN CONFIGURATION - Change these values to match your wiring
+# ============================================================================
+
+# Pump GPIO pins (BCM numbering)
+PUMP_1_PIN = 18
+PUMP_2_PIN = 19
+PUMP_3_PIN = 20
+PUMP_4_PIN = 21
+PUMP_5_PIN = 22
+PUMP_6_PIN = 23
+PUMP_7_PIN = 24
+PUMP_8_PIN = 25
+
+# Stepper motor GPIO pins (BCM numbering)
+STEPPER_STEP_PIN = 16
+STEPPER_DIR_PIN = 12
+STEPPER_ENABLE_PIN = 26
+
+# Stepper motor parameters
+STEPPER_STEPS_PER_REV = 200  # Standard 1.8° stepper motor
+STEPPER_RPM = 60             # Rotation speed
+
+# Default pump flow rates (ml per second)
+DEFAULT_FLOW_RATE = 1.0
+
+# ============================================================================
+
+
 class StepperDirection(Enum):
     CLOCKWISE = 1
     COUNTERCLOCKWISE = -1
@@ -71,23 +100,23 @@ class GPIOController:
     def __init__(self):
         # GPIO pin configurations
         self.pump_configs = {
-            1: PumpConfig(gpio_pin=18, ml_per_second=1.0, name="Pump 1"),
-            2: PumpConfig(gpio_pin=19, ml_per_second=1.0, name="Pump 2"),
-            3: PumpConfig(gpio_pin=20, ml_per_second=1.0, name="Pump 3"),
-            4: PumpConfig(gpio_pin=21, ml_per_second=1.0, name="Pump 4"),
-            5: PumpConfig(gpio_pin=22, ml_per_second=1.0, name="Pump 5"),
-            6: PumpConfig(gpio_pin=23, ml_per_second=1.0, name="Pump 6"),
-            7: PumpConfig(gpio_pin=24, ml_per_second=1.0, name="Pump 7"),
-            8: PumpConfig(gpio_pin=25, ml_per_second=1.0, name="Pump 8"),
+            1: PumpConfig(gpio_pin=PUMP_1_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 1"),
+            2: PumpConfig(gpio_pin=PUMP_2_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 2"),
+            3: PumpConfig(gpio_pin=PUMP_3_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 3"),
+            4: PumpConfig(gpio_pin=PUMP_4_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 4"),
+            5: PumpConfig(gpio_pin=PUMP_5_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 5"),
+            6: PumpConfig(gpio_pin=PUMP_6_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 6"),
+            7: PumpConfig(gpio_pin=PUMP_7_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 7"),
+            8: PumpConfig(gpio_pin=PUMP_8_PIN, ml_per_second=DEFAULT_FLOW_RATE, name="Pump 8"),
         }
         
         # Stepper motor configuration (for mixer unit)
         self.stepper_config = StepperConfig(
-            step_pin=16,
-            dir_pin=12,
-            enable_pin=26,
-            steps_per_revolution=200,
-            rpm=60
+            step_pin=STEPPER_STEP_PIN,
+            dir_pin=STEPPER_DIR_PIN,
+            enable_pin=STEPPER_ENABLE_PIN,
+            steps_per_revolution=STEPPER_STEPS_PER_REV,
+            rpm=STEPPER_RPM
         )
         
         self.is_connected = False

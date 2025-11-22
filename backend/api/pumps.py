@@ -94,7 +94,7 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
 
 
 @router.post("/{pump_id}/test", response_model=ApiResponse)
-async def test_pump(pump_id: int, request: PumpTestRequest, db_service, arduino_service):
+async def test_pump(pump_id: int, request: PumpTestRequest, db_service, gpio_controller):
     """Test pump for calibration (run for specified duration)"""
     # Verify pump exists
     pump = db_service.get_pump_by_id(pump_id)
@@ -104,15 +104,24 @@ async def test_pump(pump_id: int, request: PumpTestRequest, db_service, arduino_
             detail=f"Pump {pump_id} not found"
         )
 
-    if not arduino_service.is_connected:
+    if not gpio_controller.is_connected:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Arduino not connected"
+            detail="GPIO Controller not connected"
         )
 
     try:
+        # Calculate duration in ms
+        duration_ms = int(request.duration_seconds * 1000)
+        
         # Start pump
-        arduino_service.start_pump(pump_id)
+        success = gpio_controller.start_pump(pump_id, duration_ms)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to start pump {pump_id}"
+            )
 
         return ApiResponse(
             success=True,
@@ -154,25 +163,26 @@ async def update_pump_liquid(pump_id: int, update: PumpUpdate, db_service):
 
 
 @router.post("/test-all", response_model=ApiResponse)
-async def test_all_pumps(request: PumpTestRequest, db_service, arduino_service):
+async def test_all_pumps(request: PumpTestRequest, db_service, gpio_controller):
     """Test all pumps sequentially"""
-    if not arduino_service.is_connected:
+    if not gpio_controller.is_connected:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Arduino not connected"
+            detail="GPIO Controller not connected"
         )
 
     try:
         pumps = db_service.get_all_pumps()
         tested = 0
+        duration_ms = int(request.duration_seconds * 1000)
 
         for pump in pumps:
             try:
-                arduino_service.start_pump(pump['id'])
+                gpio_controller.start_pump(pump['id'], duration_ms)
                 tested += 1
-                # Small delay between pumps
+                # Wait for pump to finish plus small delay
                 import time
-                time.sleep(0.5)
+                time.sleep(request.duration_seconds + 0.5)
             except Exception as e:
                 print(f"Failed to test pump {pump['id']}: {e}")
 
@@ -188,27 +198,28 @@ async def test_all_pumps(request: PumpTestRequest, db_service, arduino_service):
 
 
 @router.post("/purge-all", response_model=ApiResponse)
-async def purge_all_pumps(request: PumpTestRequest, db_service, arduino_service):
+async def purge_all_pumps(request: PumpTestRequest, db_service, gpio_controller):
     """Purge all pumps with assigned liquids to clear lines"""
-    if not arduino_service.is_connected:
+    if not gpio_controller.is_connected:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Arduino not connected"
+            detail="GPIO Controller not connected"
         )
 
     try:
         pumps = db_service.get_all_pumps()
         purged = 0
+        duration_ms = int(request.duration_seconds * 1000)
 
         for pump in pumps:
             # Only purge pumps with assigned liquids
             if pump.get('liquid_id'):
                 try:
-                    arduino_service.start_pump(pump['id'])
+                    gpio_controller.start_pump(pump['id'], duration_ms)
                     purged += 1
-                    # Small delay between pumps
+                    # Wait for pump to finish plus small delay
                     import time
-                    time.sleep(0.5)
+                    time.sleep(request.duration_seconds + 0.5)
                 except Exception as e:
                     print(f"Failed to purge pump {pump['id']}: {e}")
 

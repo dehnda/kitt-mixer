@@ -24,6 +24,7 @@ sudo apt-get install -y \
     chromium-browser \
     x11-xserver-utils \
     unclutter \
+    wlr-randr \
     git
 ```
 
@@ -73,10 +74,7 @@ Add the following line to rotate the display to portrait mode:
 
 ```
 # For 90° rotation (portrait)
-display_rotate=1
-
-# Or for 270° rotation (portrait, upside down)
-# display_rotate=3
+wlr-randr --output DSI-1 --transform 270
 ```
 
 Reboot for changes to take effect:

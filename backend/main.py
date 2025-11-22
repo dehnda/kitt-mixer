@@ -4,20 +4,21 @@ from contextlib import asynccontextmanager
 import os
 from pathlib import Path
 
-from services import DatabaseService, ArduinoService, MixerService
+from services import DatabaseService, MixerService
+from services.gpio_controller import GPIOController
 from api import pumps, cocktails, status, liquids
 
 
 # Global service instances
 db_service: DatabaseService = None
-arduino_service: ArduinoService = None
+gpio_controller: GPIOController = None
 mixer_service: MixerService = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
-    global db_service, arduino_service, mixer_service
+    global db_service, gpio_controller, mixer_service
 
     # Startup
     print("Starting CocktailMixer Backend...")
@@ -30,21 +31,23 @@ async def lifespan(app: FastAPI):
     # Load initial data
     db_service.load_cocktails()
 
-    # Initialize Arduino service - get settings from database
-    arduino_port = os.getenv("ARDUINO_PORT") or db_service.db.get_setting('arduino_port', 'COM3')
-    arduino_baudrate = int(os.getenv("ARDUINO_BAUDRATE") or db_service.db.get_setting('arduino_baudrate', '9600'))
+    # Initialize GPIO Controller
+    gpio_controller = GPIOController()
 
-    arduino_service = ArduinoService(arduino_port, arduino_baudrate)
-
-    # Try to connect to Arduino (non-blocking)
+    # Try to connect to GPIO (non-blocking)
     try:
-        arduino_service.connect()
+        gpio_controller.connect()
+        if gpio_controller.is_connected:
+            print("GPIO Controller connected successfully")
+        else:
+            print("Warning: GPIO Controller not available (likely not on Raspberry Pi)")
+            print("API will still work in simulation mode")
     except Exception as e:
-        print(f"Warning: Could not connect to Arduino: {e}")
-        print("API will still work, but pump control will not be available")
+        print(f"Warning: Could not connect to GPIO: {e}")
+        print("API will still work in simulation mode")
 
     # Initialize mixer service
-    mixer_service = MixerService(db_service, arduino_service)
+    mixer_service = MixerService(db_service, gpio_controller)
 
     print("Backend started successfully!")
 
@@ -54,9 +57,9 @@ async def lifespan(app: FastAPI):
     print("Shutting down CocktailMixer Backend...")
 
     # Ensure all pumps are stopped
-    if arduino_service and arduino_service.is_connected:
-        arduino_service.stop_all_pumps()
-        arduino_service.disconnect()
+    if gpio_controller and gpio_controller.is_connected:
+        gpio_controller.stop_all_pumps()
+        gpio_controller.disconnect()
 
     print("Backend stopped.")
 
@@ -84,8 +87,8 @@ def get_db_service():
     return db_service
 
 
-def get_arduino_service():
-    return arduino_service
+def get_gpio_controller():
+    return gpio_controller
 
 
 def get_mixer_service():
@@ -97,17 +100,17 @@ pumps.get_pumps.__defaults__ = (Depends(get_db_service),)
 pumps.get_pump.__defaults__ = (None, Depends(get_db_service))
 pumps.update_pump.__defaults__ = (None, None, Depends(get_db_service))
 pumps.update_pump_liquid.__defaults__ = (None, None, Depends(get_db_service))
-pumps.test_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_arduino_service))
+pumps.test_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_gpio_controller))
 
 cocktails.get_all_cocktails.__defaults__ = (Depends(get_mixer_service),)
 cocktails.get_available_cocktails.__defaults__ = (Depends(get_mixer_service),)
 cocktails.get_cocktail.__defaults__ = (None, Depends(get_db_service))
 cocktails.make_cocktail.__defaults__ = (None, None, Depends(get_mixer_service))
 
-status.get_status.__defaults__ = (Depends(get_mixer_service), Depends(get_db_service), Depends(get_arduino_service))
+status.get_status.__defaults__ = (Depends(get_mixer_service), Depends(get_db_service), Depends(get_gpio_controller))
 status.cancel_mixing.__defaults__ = (Depends(get_mixer_service),)
 status.emergency_stop.__defaults__ = (Depends(get_mixer_service),)
-status.get_diagnostics.__defaults__ = (Depends(get_db_service), Depends(get_arduino_service))
+status.get_diagnostics.__defaults__ = (Depends(get_db_service), Depends(get_gpio_controller))
 
 liquids.get_all_liquids.__defaults__ = (Depends(get_db_service),)
 liquids.get_installed_liquids.__defaults__ = (Depends(get_db_service),)
@@ -136,7 +139,7 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "arduino_connected": arduino_service.is_connected if arduino_service else False,
+        "gpio_connected": gpio_controller.is_connected if gpio_controller else False,
         "mixer_state": mixer_service.state.value if mixer_service else "unknown"
     }
 

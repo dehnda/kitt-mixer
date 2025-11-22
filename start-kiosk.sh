@@ -106,9 +106,11 @@ done
 # Disable screen blanking and power management (if xset is available)
 if command -v xset &> /dev/null; then
     echo -e "${GREEN}Disabling screen blanking...${NC}"
-    xset s off
-    xset -dpms
-    xset s noblank
+    # Try to disable screen blanking, but don't fail if display doesn't support it
+    xset s off 2>/dev/null || true
+    xset -dpms 2>/dev/null || true
+    xset s noblank 2>/dev/null || true
+    echo -e "${GREEN}Screen blanking settings applied (if supported by display)${NC}"
 else
     echo -e "${YELLOW}xset not found - screen blanking settings not changed${NC}"
     echo -e "${YELLOW}Install with: sudo apt-get install x11-xserver-utils${NC}"
@@ -126,7 +128,32 @@ fi
 echo -e "${GREEN}Launching Chromium in kiosk mode...${NC}"
 sleep 2  # Give everything a moment to stabilize
 
-chromium-browser \
+# Check if we have a display, if not set it to :0 (primary display)
+if [ -z "$DISPLAY" ]; then
+    echo -e "${YELLOW}No DISPLAY set, using :0 (primary display)${NC}"
+    export DISPLAY=:0
+fi
+
+# Find Chromium binary (different names on different systems)
+CHROMIUM_CMD=""
+if command -v chromium-browser &> /dev/null; then
+    CHROMIUM_CMD="chromium-browser"
+elif command -v chromium &> /dev/null; then
+    CHROMIUM_CMD="chromium"
+elif command -v google-chrome &> /dev/null; then
+    CHROMIUM_CMD="google-chrome"
+else
+    echo -e "${RED}Error: No Chromium or Chrome browser found${NC}"
+    echo -e "${YELLOW}Install with: sudo apt-get install chromium-browser${NC}"
+    echo -e "${YELLOW}Or: sudo apt-get install chromium${NC}"
+    cleanup
+fi
+
+echo -e "${GREEN}Display: $DISPLAY${NC}"
+echo -e "${GREEN}Browser found: $CHROMIUM_CMD${NC}"
+echo -e "${GREEN}Starting browser in kiosk mode...${NC}"
+
+$CHROMIUM_CMD \
     --kiosk \
     --noerrdialogs \
     --disable-infobars \
@@ -135,8 +162,22 @@ chromium-browser \
     --disable-session-crashed-bubble \
     --disable-features=TranslateUI \
     --disable-component-extensions-with-background-pages \
+    --password-store=basic \
+    --disable-password-manager-reauthentication \
+    --no-default-browser-check \
+    --disable-background-networking \
+    --disable-sync \
+    --metrics-recording-only \
+    --disable-default-apps \
+    --mute-audio \
     --app="$FRONTEND_URL" \
     > "$LOG_DIR/chromium.log" 2>&1
+
+CHROMIUM_EXIT=$?
+echo -e "${YELLOW}Chromium exited with code: $CHROMIUM_EXIT${NC}"
+if [ $CHROMIUM_EXIT -ne 0 ]; then
+    echo -e "${RED}Chromium exited with an error. Check logs at: $LOG_DIR/chromium.log${NC}"
+fi
 
 # When Chromium closes, cleanup
 cleanup

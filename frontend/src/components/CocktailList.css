@@ -1,7 +1,7 @@
 .cocktail-list-page {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   flex: 1;
   min-height: 0;
 }
@@ -9,7 +9,7 @@
 .cocktail-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -22,13 +22,13 @@
 
 .cocktail-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
-  padding-right: 2px;
+  padding-right: 4px;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
@@ -40,8 +40,8 @@
 .cocktail-item {
   background: rgba(255, 0, 0, 0.1);
   border: 1px solid #660000;
-  padding: 1px 4px;
-  font-size: 11px;
+  padding: 2px 6px;
+  font-size: 13px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
@@ -50,7 +50,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
+  min-height: 40px;
   text-transform: uppercase;
 }
 
@@ -77,10 +77,10 @@
   flex: 1;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #660000;
-  padding: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
   animation: slideInUp 0.3s ease-out;
   max-height: 45%;

@@ -14,8 +14,7 @@ code {
 }
 
 #root {
-  width: 480px;
-  height: 320px;
+  width: 800px;
+  height: 480px;
   margin: 0 auto;
 }
-

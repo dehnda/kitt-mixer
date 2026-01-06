@@ -175,7 +175,8 @@ class MixerService:
                 if self.simulation_mode:
                     # Simulation mode - just wait without real hardware
                     print(f"[SIMULATION] Dispensing {amount} {unit} of {liquid}")
-                    time.sleep(2)  # Simulate 2 seconds per ingredient                else:
+                    time.sleep(2)  # Simulate 2 seconds per ingredient
+                else:
                     # Real mode - use GPIO controller
                     # Find pump for this liquid
                     if liquid not in pumps:

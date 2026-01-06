@@ -47,21 +47,21 @@ from enum import Enum
 # ============================================================================
 
 # Pump GPIO pins (BCM numbering)
-PUMP_1_PIN = 6
-PUMP_2_PIN = 5
-PUMP_3_PIN = 11
-PUMP_4_PIN = 9
-PUMP_5_PIN = 10
-PUMP_6_PIN = 4
-PUMP_7_PIN = 3
-PUMP_8_PIN = 2
+PUMP_1_PIN = 14
+PUMP_2_PIN = 15
+PUMP_3_PIN = 18
+PUMP_4_PIN = 23
+PUMP_5_PIN = 24
+PUMP_6_PIN = 25
+PUMP_7_PIN = 8
+PUMP_8_PIN = 7
 
 # Pump reverse control pin (shared for all pumps)
-PUMP_REVERSE_PIN = 23
+PUMP_REVERSE_PIN = 12
 
 # Stepper motor GPIO pins (BCM numbering)
 STEPPER_STEP_PIN = 16
-STEPPER_DIR_PIN = 12
+STEPPER_DIR_PIN = 5
 STEPPER_ENABLE_PIN = 26
 
 # Stepper motor parameters

@@ -46,6 +46,12 @@ async def lifespan(app: FastAPI):
         print(f"Warning: Could not connect to GPIO: {e}")
         print("API will still work in simulation mode")
 
+    # Load pump configurations from database
+    pump_configs = db_service.get_pumps()
+    for pump in pump_configs:
+        print(f"Configuring Pump ID {pump['id']}: {pump['ml_per_second']} ml/s, Liquid ID: {pump['liquid_id']}")
+        gpio_controller.set_pump_flow_rate(pump['id'], pump['ml_per_second'])
+
     # Initialize mixer service
     mixer_service = MixerService(db_service, gpio_controller)
 
@@ -100,7 +106,7 @@ def get_mixer_service():
 # Update routers to use dependency injection
 pumps.get_pumps.__defaults__ = (Depends(get_db_service),)
 pumps.get_pump.__defaults__ = (None, Depends(get_db_service))
-pumps.update_pump.__defaults__ = (None, None, Depends(get_db_service))
+pumps.update_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_gpio_controller))
 pumps.update_pump_liquid.__defaults__ = (None, None, Depends(get_db_service))
 pumps.test_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_gpio_controller))
 pumps.stop_pump.__defaults__ = (None, Depends(get_db_service), Depends(get_gpio_controller))

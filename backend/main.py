@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 from pathlib import Path
+import serial.tools.list_ports
 
-from services import DatabaseService, MixerService
+from services import DatabaseService, MixerService, ArduinoService
 from services.gpio_controller import GPIOController
 from api import pumps, cocktails, status, liquids
 
@@ -13,12 +14,13 @@ from api import pumps, cocktails, status, liquids
 db_service: DatabaseService = None
 gpio_controller: GPIOController = None
 mixer_service: MixerService = None
+arduino_service: ArduinoService = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
-    global db_service, gpio_controller, mixer_service
+    global db_service, gpio_controller, mixer_service, arduino_service
 
     # Startup
     print("Starting CocktailMixer Backend...")
@@ -34,6 +36,10 @@ async def lifespan(app: FastAPI):
     # Initialize GPIO Controller
     gpio_controller = GPIOController()
 
+    # Intialize Arduino Service
+    arduino_port = os.getenv("ARDUINO_PORT") or find_arduino_port() or "/dev/ttyUSB0"
+    arduino_service = ArduinoService(port=arduino_port)
+
     # Try to connect to GPIO (non-blocking)
     try:
         gpio_controller.connect()
@@ -46,6 +52,12 @@ async def lifespan(app: FastAPI):
         print(f"Warning: Could not connect to GPIO: {e}")
         print("API will still work in simulation mode")
 
+    # Connect to Arduino
+    if arduino_service.connect():
+        print("Arduino connected successfully!")
+    else:
+        print("Warning: Could not connect to Arduino")
+
     # Load pump configurations from database
     pump_configs = db_service.get_pumps()
     for pump in pump_configs:
@@ -53,7 +65,7 @@ async def lifespan(app: FastAPI):
         gpio_controller.set_pump_flow_rate(pump['id'], pump['ml_per_second'])
 
     # Initialize mixer service
-    mixer_service = MixerService(db_service, gpio_controller)
+    mixer_service = MixerService(db_service, gpio_controller, arduino_service)
 
     print("Backend started successfully!")
 
@@ -169,3 +181,21 @@ if __name__ == "__main__":
         port=port,
         reload=debug
     )
+
+
+
+def find_arduino_port():
+    """Find Arduino Nano port automatically"""
+    ports = serial.tools.list_ports.comports()
+
+    for port in ports:
+        # Check for common Arduino identifiers
+        if any(identifier in port.description.lower() for identifier in
+               ['arduino', 'ch340', 'cp210', 'ftdi']):
+            return port.device
+
+        # Check by vendor ID (Arduino/compatible)
+        if port.vid in [0x2341, 0x1A86, 0x10C4]:  # Arduino, CH340, CP210x
+            return port.device
+
+    return None

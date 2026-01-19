@@ -223,6 +223,14 @@ class GPIOController:
 
         with self.lock:
             try:
+
+                # TODO These pumps are connected reverse. It should be
+                # possible to revert them via GUI, but for now we hardcode it here.
+                # So whatever comes along, we reverse these pumps:
+                reverse_pumps = [1, 5, 6, 7]
+                if pump_id in reverse_pumps:
+                    reverse = not reverse
+
                 config = self.pump_configs[pump_id]
                 
                 # Cancel existing timer if any

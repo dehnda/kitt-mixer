@@ -43,7 +43,7 @@ async def get_pump(pump_id: int, db_service):
 
 
 @router.put("/{pump_id}", response_model=ApiResponse)
-async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
+async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service, gpio_controller):
     """Update pump configuration (liquid ID and/or flow rate)"""
     # Verify pump exists
     pump = db_service.get_pump_by_id(pump_id)
@@ -66,6 +66,10 @@ async def update_pump(pump_id: int, update: PumpConfigUpdate, db_service):
     # Check if ml_per_second was provided
     if success and update.model_fields_set and 'ml_per_second' in update.model_fields_set:
         success = db_service.update_pump_flow_rate(pump_id, update.ml_per_second)
+
+        # We also need to update the pump configuration in GPIO controller
+        if success:
+            gpio_controller.set_pump_flow_rate(pump_id, update.ml_per_second)
 
     if not success:
         raise HTTPException(

@@ -89,7 +89,7 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
           className={`kitt-button small wide ${filter === 'all' ? '' : 'gray'}`}
           onClick={() => setFilter('all')}
         >
-          ALL
+          ALL ({cocktails.length})
         </button>
         <button
           className={`kitt-button small narrow ${
@@ -99,7 +99,7 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
           }`}
           onClick={() => setFilter('available')}
         >
-          AVAILABLE
+          AVAILABLE ({cocktails.filter(c => c.can_make).length})
         </button>
         <button
           className="kitt-button small wide orange"

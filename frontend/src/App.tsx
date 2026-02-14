@@ -7,8 +7,9 @@ import { CalibrateScreen } from './components/CalibrateScreen';
 import { MixingProgress } from './components/MixingProgress';
 import { api } from './services/api';
 import { Cocktail, SystemStatus } from './types';
+import ShoppingGuide from './components/ShoppingGuide';
 
-type Screen = 'list' | 'config' | 'status' | 'calibrate';
+type Screen = 'list' | 'config' | 'status' | 'calibrate' | 'shopping-guide';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('list');
@@ -71,6 +72,10 @@ function App() {
     setScreen('status');
   };
 
+  const handleShoppingGuideOpen = () => {
+    setScreen('shopping-guide');
+  };
+
   const handleCancelMixing = async () => {
     try {
       await api.cancelMixing();
@@ -119,6 +124,7 @@ function App() {
               onSelect={handleCocktailSelect}
               onConfigOpen={handleConfigOpen}
               onStatusOpen={handleStatusOpen}
+              onShoppingGuideOpen={handleShoppingGuideOpen}
             />
           )}
           {screen === 'config' && (
@@ -136,6 +142,9 @@ function App() {
           )}
           {screen === 'calibrate' && (
             <CalibrateScreen onBack={() => setScreen('config')} />
+          )}
+          {screen === 'shopping-guide' && (
+            <ShoppingGuide onBack={() => setScreen('list')} cocktails={cocktails} />
           )}
         </>
       )}

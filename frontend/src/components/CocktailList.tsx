@@ -7,9 +7,10 @@ interface CocktailListProps {
   onSelect: (cocktail: Cocktail) => void;
   onConfigOpen: () => void;
   onStatusOpen: () => void;
+  onShoppingGuideOpen: () => void;
 }
 
-export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect, onConfigOpen, onStatusOpen }) => {
+export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect, onConfigOpen, onStatusOpen, onShoppingGuideOpen }) => {
   const [filter, setFilter] = useState<'all' | 'available'>('all');
   const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -108,6 +109,9 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
         </button>
         <button className="kitt-button green small wide" onClick={onStatusOpen}>
           ● STATUS
+        </button>
+        <button className="kitt-button yellow small wide" onClick={onShoppingGuideOpen}>
+          SHOPPING GUIDE
         </button>
       </div>
     </div>

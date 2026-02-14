@@ -1,0 +1,158 @@
+/* ── Shopping Guide ── */
+
+.shopping-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── Makeable cocktails banner ── */
+
+.sg-makeable-section {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #660000;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+}
+
+.sg-makeable-label {
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+.sg-makeable-list {
+    color: #88dd00;
+    font-size: 11px;
+    line-height: 1.4;
+    text-shadow: 0 0 4px rgba(136, 221, 0, 0.6);
+    min-height: 18px;
+    word-break: break-word;
+    max-height: 56px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Ingredient table header ── */
+
+.sg-ingredient-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 8px;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #ff0000;
+    border-bottom: 1px solid #660000;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+.sg-header-right {
+    display: flex;
+    gap: 16px;
+}
+
+.sg-header-right span {
+    min-width: 50px;
+    text-align: right;
+}
+
+/* ── Scrollable ingredient list ── */
+
+.sg-ingredient-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-right: 2px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+}
+
+/* ── Single ingredient row ── */
+
+.sg-ingredient-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    font-size: 12px;
+    background: rgba(255, 0, 0, 0.08);
+    border: 1px solid #440000;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.sg-ingredient-row:hover {
+    background: rgba(255, 100, 0, 0.2);
+    border-color: #ff6600;
+}
+
+.sg-ingredient-row.selected {
+    background: rgba(0, 255, 0, 0.15);
+    border-color: #00aa00;
+}
+
+.sg-ingredient-row.selected:hover {
+    background: rgba(0, 255, 0, 0.25);
+    border-color: #00ff00;
+}
+
+.sg-ingredient-row.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.sg-ing-name {
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: 0 0 4px #973b3b;
+}
+
+.sg-ingredient-row.selected .sg-ing-name {
+    color: #88dd00;
+    text-shadow: 0 0 5px rgba(136, 221, 0, 0.6);
+}
+
+.sg-ing-unlocks {
+    color: #ffaa00;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 4px rgba(255, 170, 0, 0.5);
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
+}
+
+.sg-ingredient-row.selected .sg-ing-unlocks {
+    color: #00ff00;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.sg-ing-right {
+    display: flex;
+    gap: 16px;
+}
+
+.sg-ing-used-in {
+    color: #ff6666;
+    font-size: 11px;
+    min-width: 50px;
+    text-align: right;
+    text-shadow: 0 0 3px rgba(255, 102, 102, 0.4);
+}
+
+.sg-ingredient-row.selected .sg-ing-used-in {
+    color: #66cc66;
+    text-shadow: 0 0 3px rgba(102, 204, 102, 0.4);
+}

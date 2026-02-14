@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { CocktailList } from './components/CocktailList';
 import { ConfigScreen } from './components/ConfigScreen';
@@ -6,7 +6,7 @@ import { StatusScreen } from './components/StatusScreen';
 import { CalibrateScreen } from './components/CalibrateScreen';
 import { MixingProgress } from './components/MixingProgress';
 import { api } from './services/api';
-import { Cocktail, SystemStatus } from './types';
+import type { Cocktail, SystemStatus } from './types/index';
 import ShoppingGuide from './components/ShoppingGuide';
 
 type Screen = 'list' | 'config' | 'status' | 'calibrate' | 'shopping-guide';

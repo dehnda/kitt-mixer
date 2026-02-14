@@ -24,8 +24,6 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
   const [saving, setSaving] = useState(false);
   const [reverseMode, setReverseMode] = useState(false);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
   useEffect(() => {
     loadPumps();
   }, []);
@@ -33,7 +31,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
   const loadPumps = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps`);
+      const response = await fetch(`/api/v1/pumps`);
       const data = await response.json();
       setPumps(data);
       if (data.length > 0) {
@@ -67,10 +65,10 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
 
     try {
       setTesting(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${selectedPump.id}/test`, {
+      const response = await fetch(`/api/v1/pumps/${selectedPump.id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           duration_seconds: testDuration,
           reverse: reverseMode
         }),
@@ -91,7 +89,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
     if (!selectedPump) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${selectedPump.id}/stop`, {
+      const response = await fetch(`/api/v1/pumps/${selectedPump.id}/stop`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -106,7 +104,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
 
   const stopAllPumps = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/stop-all`, {
+      const response = await fetch(`/api/v1/pumps/stop-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -124,7 +122,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
 
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${selectedPump.id}`, {
+      const response = await fetch(`/api/v1/pumps/${selectedPump.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ml_per_second: calculatedRate }),

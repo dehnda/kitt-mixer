@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cocktail } from '../types';
+import type { Cocktail } from '../types';
 import './CocktailList.css';
 
 interface CocktailListProps {

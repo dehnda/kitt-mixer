@@ -88,17 +88,6 @@ The frontend connects to these backend endpoints:
 | `/status` | GET | System status and mixing progress |
 | `/status/stop` | POST | Emergency stop |
 
-## Configuration
-
-### Environment Variables
-```bash
-# Development (.env)
-REACT_APP_API_URL=http://localhost:8000
-
-# Production (.env.production)
-REACT_APP_API_URL=http://192.168.1.100:8000
-```
-
 ### Backend Config (config.yaml)
 ```yaml
 arduino:

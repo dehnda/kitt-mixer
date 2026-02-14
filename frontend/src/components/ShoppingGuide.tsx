@@ -1,6 +1,6 @@
 // AI Slob
 import { useState, useMemo } from "react";
-import { Cocktail } from "../types";
+import type { Cocktail } from "../types";
 import "./ShoppingGuide.css";
 
 const MAX_PUMPS = 8;

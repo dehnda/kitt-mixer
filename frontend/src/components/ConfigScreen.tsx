@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './ConfigScreen.css';
-import { Liquid } from '../types';
+import type { Liquid } from '../types';
 
 interface Pump {
   id: number;
@@ -34,8 +34,6 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
   const [purgeMessage, setPurgeMessage] = useState<string | null>(null);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
   useEffect(() => {
     loadConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,12 +43,12 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
     try {
       setLoading(true);
       // Load pumps
-      const pumpsRes = await fetch(`${API_BASE_URL}/api/v1/pumps`);
+      const pumpsRes = await fetch(`/api/v1/pumps`);
       const pumpsData = await pumpsRes.json();
       setPumps(pumpsData);
 
       // Load available liquids
-      const liquidsRes = await fetch(`${API_BASE_URL}/api/v1/liquids`);
+      const liquidsRes = await fetch(`/api/v1/liquids`);
       const liquidsData = await liquidsRes.json();
       setLiquids(liquidsData);
 
@@ -66,7 +64,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   const handleLiquidChange = async (pumpId: number, liquidId: number | null) => {
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${pumpId}`, {
+      const response = await fetch(`/api/v1/pumps/${pumpId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ liquid_id: liquidId }),
@@ -99,7 +97,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${pumpId}`, {
+      const response = await fetch(`/api/v1/pumps/${pumpId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ml_per_second: pump.ml_per_second }),
@@ -121,7 +119,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
       setError(null);
 
       // Start pump for calibration
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${pumpId}/test`, {
+      const response = await fetch(`/api/v1/pumps/${pumpId}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration_seconds: duration }),
@@ -142,7 +140,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
   const stopCalibration = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/status/stop`, { method: 'POST' });
+      await fetch(`/api/v1/status/stop`, { method: 'POST' });
       setCalibrating(null);
     } catch (err) {
       console.error('Failed to stop calibration:', err);
@@ -170,7 +168,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${editingPump.id}`, {
+      const response = await fetch(`/api/v1/pumps/${editingPump.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,7 +228,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
       setCalibrating(calibratingPump.id);
       setError(null);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${calibratingPump.id}/test`, {
+      const response = await fetch(`/api/v1/pumps/${calibratingPump.id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration_seconds: testDuration }),
@@ -253,7 +251,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
     try {
       setSaving(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/${calibratingPump.id}`, {
+      const response = await fetch(`/api/v1/pumps/${calibratingPump.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ml_per_second: calculatedRate }),
@@ -543,7 +541,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                   setShowPurgeConfirm(false);
                   try {
                     setSaving(true);
-                    const response = await fetch(`${API_BASE_URL}/api/v1/pumps/purge-all`, {
+                    const response = await fetch(`/api/v1/pumps/purge-all`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ duration_seconds: 5 }),

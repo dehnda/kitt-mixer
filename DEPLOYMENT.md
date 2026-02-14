@@ -85,9 +85,6 @@ cd ~/CocktailMixer/frontend
 # Install dependencies
 npm install
 
-# Configure API URL (use your Pi's IP)
-echo "REACT_APP_API_URL=http://localhost:8000" > .env.production
-
 # Build for production
 npm run build
 ```

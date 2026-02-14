@@ -18,13 +18,6 @@ npm run build  # Production build
 - ⚡ Real-time mixing progress
 - 💫 Smooth animations
 
-## Configuration
-
-Edit `.env` for API URL:
-```env
-REACT_APP_API_URL=http://localhost:8000
-```
-
 ## Deployment
 
 See `../DEPLOYMENT.md` for Raspberry Pi setup.

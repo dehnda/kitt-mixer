@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { Cocktail, SystemStatus, MakeCocktailRequest } from '../types';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import type { Cocktail, SystemStatus, MakeCocktailRequest } from '../types';
 
 const apiClient = axios.create({
-    baseURL: `${API_BASE_URL}/api/v1`,
+    baseURL: `/api/v1`,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',

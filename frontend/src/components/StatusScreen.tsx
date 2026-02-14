@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { SystemStatus } from '../types';
+import type { SystemStatus } from '../types';
 import './StatusScreen.css';
 
 interface StatusScreenProps {
@@ -13,12 +13,11 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
   const [testing, setTesting] = useState(false);
   const [diagnostics, setDiagnostics] = useState<any>(null);
   const pumps = status.pumps || [];
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
   const handleTestAll = async () => {
     try {
       setTesting(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/pumps/test-all`, {
+      const response = await fetch(`/api/v1/pumps/test-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration_seconds: 3 }),
@@ -35,7 +34,7 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
 
   const handleDiagnostics = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/status/diagnostics`);
+      const response = await fetch(`/api/v1/status/diagnostics`);
       if (!response.ok) throw new Error('Diagnostics failed');
       const data = await response.json();
       setDiagnostics(data);

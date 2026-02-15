@@ -1,57 +1,74 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Cocktail } from '../types';
 import './CocktailList.css';
+import useCocktails from '../api/useCocktails';
+import { Outlet, useNavigate, useParams } from 'react-router';
+import useCocktail from '../api/useCocktail';
+import Loading from './Loading';
+import ErrorScreen from './Error';
+import useMakeCocktail from '../api/useMakeCocktail';
 
-interface CocktailListProps {
-  cocktails: Cocktail[];
-  onSelect: (cocktail: Cocktail) => void;
-  onConfigOpen: () => void;
-  onStatusOpen: () => void;
-  onShoppingGuideOpen: () => void;
-}
+export const CocktailList: React.FC = () => {
+  const params = useParams<{ name: string }>();
+  const selectedCocktail = useCocktail(params.name);
+  const cocktails = useCocktails();
+  const makeCocktail = useMakeCocktail();
+  const navigate = useNavigate();
 
-export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect, onConfigOpen, onStatusOpen, onShoppingGuideOpen }) => {
-  const [filter, setFilter] = useState<'all' | 'available'>('all');
-  const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
-  const [showIngredients, setShowIngredients] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'available'>('available');
 
-  const filteredCocktails = filter === 'available'
-    ? cocktails.filter(c => c.can_make)
-    : cocktails;
+  const filteredCocktails = useMemo(() => {
+    if (cocktails.isPending || cocktails.isError) {
+      return [];
+    }
 
-  const hasAvailableCocktails = cocktails.some(c => c.can_make);
+    return filter === 'available'
+      ? cocktails.data.filter((c) => c.can_make)
+      : cocktails.data;
+  }, [cocktails, filter]);
 
   const handleSelect = (cocktail: Cocktail) => {
-    if (selectedCocktail?.name === cocktail.name) {
+    if (selectedCocktail?.data?.name === cocktail.name) {
       // Toggle off if clicking the same cocktail
-      setShowIngredients(!showIngredients);
-    } else {
-      // Select new cocktail and show ingredients
-      setSelectedCocktail(cocktail);
-      setShowIngredients(true);
-    }
-    if (selectedCocktail?.name !== cocktail.name) {
-      setSelectedCocktail(cocktail);
+      navigate('/cocktails');
+    } else if (selectedCocktail?.data?.name !== cocktail.name) {
+      navigate(`/cocktails/${cocktail.name}`);
     }
   };
 
   const handleEngage = () => {
-    if (selectedCocktail && selectedCocktail.can_make) {
-      onSelect(selectedCocktail);
+    if (selectedCocktail && selectedCocktail.data?.can_make) {
+      makeCocktail.mutate({
+        name: selectedCocktail.data.name,
+        sizeMl: 200, // TODO - allow user to select size
+      });
     }
   };
+
+  if (cocktails.isPending) {
+    return <Loading />;
+  }
+  if (cocktails.isError) {
+    return (
+      <ErrorScreen message="Failed to load cocktails. Please try again." />
+    );
+  }
+
+  console.log({ selectedCocktail: selectedCocktail.data });
 
   return (
     <div className="cocktail-list-page">
       <div className="display-screen">
         <div className="display-title">K.I.T.T</div>
 
-        <div className={`cocktail-content ${showIngredients ? 'with-details' : ''}`}>
+        <div
+          className={`cocktail-content ${selectedCocktail.isEnabled ? 'with-details' : ''}`}
+        >
           <div className="cocktail-grid">
             {filteredCocktails.map((cocktail) => (
               <div
                 key={cocktail.name}
-                className={`cocktail-item ${selectedCocktail?.name === cocktail.name ? 'selected' : ''} ${!cocktail.can_make ? 'unavailable' : ''}`}
+                className={`cocktail-item ${selectedCocktail?.data?.name === cocktail.name ? 'selected' : ''} ${!cocktail.can_make ? 'unavailable' : ''}`}
                 onClick={() => handleSelect(cocktail)}
               >
                 {cocktail.name.toUpperCase()}
@@ -59,58 +76,43 @@ export const CocktailList: React.FC<CocktailListProps> = ({ cocktails, onSelect,
             ))}
           </div>
 
-          {selectedCocktail && showIngredients && (
-            <div className="ingredients-panel">
-              <div className="panel-title">{selectedCocktail.name.toUpperCase()}</div>
-              <div className="panel-subtitle">INGREDIENTS</div>
-              <div className="ingredient-list">
-                {selectedCocktail.ingredients.map((ing, index) => (
-                  <div key={index} className="ingredient-line">
-                    <span className="ing-name">{ing.ingredient.toUpperCase()}</span>
-                    <span className="ing-amount">{ing.amount} {ing.unit.toUpperCase()}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <Outlet />
         </div>
       </div>
 
       <button
-        className={`kitt-button large ${selectedCocktail?.can_make ? 'green' : 'gray'}`}
+        className={`kitt-button large ${selectedCocktail?.data?.can_make ? 'green' : 'gray'}`}
         onClick={handleEngage}
-        disabled={!selectedCocktail?.can_make}
+        disabled={!selectedCocktail?.data?.can_make}
       >
         ▶ ENGAGE
       </button>
 
       <div className="control-buttons">
         <button
-          className={`kitt-button small wide ${filter === 'all' ? '' : 'gray'}`}
-          onClick={() => setFilter('all')}
+          className={`kitt-button small wide green`}
+          onClick={() => setFilter(filter === 'all' ? 'available' : 'all')}
         >
-          ALL ({cocktails.length})
-        </button>
-        <button
-          className={`kitt-button small narrow ${
-            filter === 'available'
-              ? (hasAvailableCocktails ? 'green' : 'red')
-              : (hasAvailableCocktails ? 'green' : 'red')
-          }`}
-          onClick={() => setFilter('available')}
-        >
-          AVAILABLE ({cocktails.filter(c => c.can_make).length})
+          {filter === 'all'
+            ? `ALL (${cocktails.data.length})`
+            : `AVAILABLE (${cocktails.data.filter((c) => c.can_make).length})`}
         </button>
         <button
           className="kitt-button small wide orange"
-          onClick={onConfigOpen}
+          onClick={() => navigate('/config')}
         >
           CONFIG
         </button>
-        <button className="kitt-button green small wide" onClick={onStatusOpen}>
+        <button
+          className="kitt-button green small wide"
+          onClick={() => navigate('/status')}
+        >
           ● STATUS
         </button>
-        <button className="kitt-button yellow small wide" onClick={onShoppingGuideOpen}>
+        <button
+          className="kitt-button yellow small wide"
+          onClick={() => navigate('/shopping-guide')}
+        >
           SHOPPING GUIDE
         </button>
       </div>

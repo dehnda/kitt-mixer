@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './ConfigScreen.css';
 import type { Liquid } from '../types';
+import { useNavigate } from 'react-router';
 
 interface Pump {
   id: number;
@@ -12,12 +13,8 @@ interface Pump {
   is_active: boolean;
 }
 
-interface ConfigScreenProps {
-  onBack: () => void;
-  onCalibrate: () => void;
-}
-
-export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate }) => {
+export const ConfigScreen: React.FC = () => {
+  const navigate = useNavigate();
   const [pumps, setPumps] = useState<Pump[]>([]);
   const [liquids, setLiquids] = useState<Liquid[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +58,10 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
     }
   };
 
-  const handleLiquidChange = async (pumpId: number, liquidId: number | null) => {
+  const handleLiquidChange = async (
+    pumpId: number,
+    liquidId: number | null
+  ) => {
     try {
       setSaving(true);
       const response = await fetch(`/api/v1/pumps/${pumpId}`, {
@@ -85,14 +85,16 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   const handleFlowRateChange = (pumpId: number, value: string) => {
     const flowRate = parseFloat(value);
     if (!isNaN(flowRate) && flowRate > 0) {
-      setPumps(pumps.map(p =>
-        p.id === pumpId ? { ...p, ml_per_second: flowRate } : p
-      ));
+      setPumps(
+        pumps.map((p) =>
+          p.id === pumpId ? { ...p, ml_per_second: flowRate } : p
+        )
+      );
     }
   };
 
   const saveFlowRate = async (pumpId: number) => {
-    const pump = pumps.find(p => p.id === pumpId);
+    const pump = pumps.find((p) => p.id === pumpId);
     if (!pump) return;
 
     try {
@@ -160,7 +162,9 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   };
 
   const adjustFlowRate = (delta: number) => {
-    setEditFlowRate(Math.max(0.1, Math.round((editFlowRate + delta) * 10) / 10));
+    setEditFlowRate(
+      Math.max(0.1, Math.round((editFlowRate + delta) * 10) / 10)
+    );
   };
 
   const saveEditedPump = async () => {
@@ -173,7 +177,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           liquid_id: editLiquidId,
-          ml_per_second: editFlowRate
+          ml_per_second: editFlowRate,
         }),
       });
 
@@ -211,7 +215,9 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
   };
 
   const adjustMeasuredVolume = (delta: number) => {
-    setMeasuredVolume(Math.max(0, Math.round((measuredVolume + delta) * 100) / 100));
+    setMeasuredVolume(
+      Math.max(0, Math.round((measuredVolume + delta) * 100) / 100)
+    );
   };
 
   const calculateFlowRate = () => {
@@ -259,9 +265,13 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
       if (!response.ok) throw new Error('Failed to save flow rate');
 
-      setPumps(pumps.map(p =>
-        p.id === calibratingPump.id ? { ...p, ml_per_second: calculatedRate } : p
-      ));
+      setPumps(
+        pumps.map((p) =>
+          p.id === calibratingPump.id
+            ? { ...p, ml_per_second: calculatedRate }
+            : p
+        )
+      );
 
       closeCalibrateMode();
       setError(null);
@@ -299,8 +309,12 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
               style={{ cursor: 'pointer' }}
             >
               <div className="pump-number">PUMP {pump.id}</div>
-              <div className="pump-liquid">{pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}</div>
-              <div className="pump-flow">{pump.ml_per_second.toFixed(1)} ML/SEC</div>
+              <div className="pump-liquid">
+                {pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}
+              </div>
+              <div className="pump-flow">
+                {pump.ml_per_second.toFixed(1)} ML/SEC
+              </div>
               <div className="pump-action">
                 {calibrating === pump.id ? (
                   <button
@@ -335,13 +349,19 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
         <button className="kitt-button green" onClick={loadConfig}>
           SAVE CONFIG
         </button>
-        <button className="kitt-button yellow" onClick={onCalibrate}>
+        <button
+          className="kitt-button yellow"
+          onClick={() => navigate('/calibrate')}
+        >
           CALIBRATE
         </button>
-        <button className="kitt-button yellow" onClick={() => setShowPurgeConfirm(true)}>
+        <button
+          className="kitt-button yellow"
+          onClick={() => setShowPurgeConfirm(true)}
+        >
           PURGE ALL
         </button>
-        <button className="kitt-button" onClick={onBack}>
+        <button className="kitt-button" onClick={() => navigate(-1)}>
           BACK
         </button>
       </div>
@@ -375,10 +395,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
             <div className="modal-section">
               <div className="modal-label">FLOW RATE:</div>
               <div className="flow-rate-control">
-                <button
-                  className="flow-btn"
-                  onClick={() => adjustFlowRate(-1)}
-                >
+                <button className="flow-btn" onClick={() => adjustFlowRate(-1)}>
                   -1.0
                 </button>
                 <button
@@ -396,10 +413,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                 >
                   +0.1
                 </button>
-                <button
-                  className="flow-btn"
-                  onClick={() => adjustFlowRate(1)}
-                >
+                <button className="flow-btn" onClick={() => adjustFlowRate(1)}>
                   +1.0
                 </button>
               </div>
@@ -435,7 +449,10 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
       {calibratingPump && (
         <div className="modal-overlay" onClick={closeCalibrateMode}>
-          <div className="modal-content calibrate-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content calibrate-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-title">PUMP CALIBRATION</div>
 
             <div className="calibrate-section">
@@ -455,7 +472,8 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
 
             <div className="calibrate-info">
               <div className="calibrate-pump-name">
-                PUMP {calibratingPump.id} - {calibratingPump.liquid?.toUpperCase() || 'EMPTY'}
+                PUMP {calibratingPump.id} -{' '}
+                {calibratingPump.liquid?.toUpperCase() || 'EMPTY'}
               </div>
             </div>
 
@@ -463,9 +481,19 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
               <div className="calibrate-row">
                 <span className="calibrate-label">TEST DURATION</span>
                 <div className="calibrate-adjuster">
-                  <button className="adj-btn" onClick={() => adjustTestDuration(-1)}>-</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustTestDuration(-1)}
+                  >
+                    -
+                  </button>
                   <div className="adj-value">{testDuration}</div>
-                  <button className="adj-btn" onClick={() => adjustTestDuration(1)}>+</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustTestDuration(1)}
+                  >
+                    +
+                  </button>
                   <span className="adj-unit">SEC</span>
                 </div>
               </div>
@@ -473,9 +501,19 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
               <div className="calibrate-row">
                 <span className="calibrate-label">MEASURED VOLUME</span>
                 <div className="calibrate-adjuster">
-                  <button className="adj-btn" onClick={() => adjustMeasuredVolume(-1)}>-</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustMeasuredVolume(-1)}
+                  >
+                    -
+                  </button>
                   <div className="adj-value">{measuredVolume.toFixed(2)}</div>
-                  <button className="adj-btn" onClick={() => adjustMeasuredVolume(1)}>+</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustMeasuredVolume(1)}
+                  >
+                    +
+                  </button>
                   <span className="adj-unit">ML</span>
                 </div>
               </div>
@@ -514,10 +552,7 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
               >
                 SAVE RATE
               </button>
-              <button
-                className="kitt-button red"
-                onClick={closeCalibrateMode}
-              >
+              <button className="kitt-button red" onClick={closeCalibrateMode}>
                 BACK
               </button>
             </div>
@@ -526,7 +561,10 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
       )}
 
       {showPurgeConfirm && (
-        <div className="modal-overlay" onClick={() => setShowPurgeConfirm(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowPurgeConfirm(false)}
+        >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-title">CONFIRM PURGE</div>
             <div className="modal-message">
@@ -548,7 +586,9 @@ export const ConfigScreen: React.FC<ConfigScreenProps> = ({ onBack, onCalibrate 
                     });
                     if (!response.ok) throw new Error('Purge failed');
                     const data = await response.json();
-                    setPurgeMessage(data.message || 'All pumps purged successfully');
+                    setPurgeMessage(
+                      data.message || 'All pumps purged successfully'
+                    );
                   } catch (err) {
                     console.error('Purge all failed:', err);
                     setPurgeMessage('Failed to purge pumps');

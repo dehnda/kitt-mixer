@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './CalibrateScreen.css';
+import { useNavigate } from 'react-router';
 
 interface Pump {
   id: number;
@@ -9,11 +10,8 @@ interface Pump {
   is_active: boolean;
 }
 
-interface CalibrateScreenProps {
-  onBack: () => void;
-}
-
-export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
+export const CalibrateScreen: React.FC = () => {
+  const navigate = useNavigate();
   const [pumps, setPumps] = useState<Pump[]>([]);
   const [selectedPump, setSelectedPump] = useState<Pump | null>(null);
   const [testDuration, setTestDuration] = useState<number>(10);
@@ -50,7 +48,9 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
   };
 
   const adjustMeasuredVolume = (delta: number) => {
-    setMeasuredVolume(Math.max(0, Math.round((measuredVolume + delta) * 100) / 100));
+    setMeasuredVolume(
+      Math.max(0, Math.round((measuredVolume + delta) * 100) / 100)
+    );
   };
 
   const calculateFlowRate = () => {
@@ -70,7 +70,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           duration_seconds: testDuration,
-          reverse: reverseMode
+          reverse: reverseMode,
         }),
       });
 
@@ -130,9 +130,11 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
 
       if (!response.ok) throw new Error('Failed to save flow rate');
 
-      setPumps(pumps.map(p =>
-        p.id === selectedPump.id ? { ...p, ml_per_second: calculatedRate } : p
-      ));
+      setPumps(
+        pumps.map((p) =>
+          p.id === selectedPump.id ? { ...p, ml_per_second: calculatedRate } : p
+        )
+      );
 
       // Reset for next pump
       setMeasuredVolume(0);
@@ -179,7 +181,8 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
           <>
             <div className="calibrate-info">
               <div className="calibrate-pump-name">
-                PUMP {selectedPump.id} - {selectedPump.liquid?.toUpperCase() || 'EMPTY'}
+                PUMP {selectedPump.id} -{' '}
+                {selectedPump.liquid?.toUpperCase() || 'EMPTY'}
               </div>
             </div>
 
@@ -202,9 +205,19 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
               <div className="calibrate-row">
                 <span className="calibrate-label">TEST DURATION</span>
                 <div className="calibrate-adjuster">
-                  <button className="adj-btn" onClick={() => adjustTestDuration(-1)}>-</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustTestDuration(-1)}
+                  >
+                    -
+                  </button>
                   <div className="adj-value">{testDuration}</div>
-                  <button className="adj-btn" onClick={() => adjustTestDuration(1)}>+</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustTestDuration(1)}
+                  >
+                    +
+                  </button>
                   <span className="adj-unit">SEC</span>
                 </div>
               </div>
@@ -212,9 +225,19 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
               <div className="calibrate-row">
                 <span className="calibrate-label">MEASURED VOLUME</span>
                 <div className="calibrate-adjuster">
-                  <button className="adj-btn" onClick={() => adjustMeasuredVolume(-1)}>-</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustMeasuredVolume(-1)}
+                  >
+                    -
+                  </button>
                   <div className="adj-value">{measuredVolume.toFixed(2)}</div>
-                  <button className="adj-btn" onClick={() => adjustMeasuredVolume(1)}>+</button>
+                  <button
+                    className="adj-btn"
+                    onClick={() => adjustMeasuredVolume(1)}
+                  >
+                    +
+                  </button>
                   <span className="adj-unit">ML</span>
                 </div>
               </div>
@@ -242,10 +265,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
         >
           {testing ? 'STOP TEST' : 'RUN TEST'}
         </button>
-        <button
-          className="kitt-button red"
-          onClick={stopAllPumps}
-        >
+        <button className="kitt-button red" onClick={stopAllPumps}>
           STOP ALL
         </button>
         <button
@@ -262,7 +282,7 @@ export const CalibrateScreen: React.FC<CalibrateScreenProps> = ({ onBack }) => {
         >
           SAVE RATE
         </button>
-        <button className="kitt-button" onClick={onBack}>
+        <button className="kitt-button" onClick={() => navigate(-1)}>
           BACK
         </button>
       </div>

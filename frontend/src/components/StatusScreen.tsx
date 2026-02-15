@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import type { SystemStatus } from '../types';
 import './StatusScreen.css';
+import useStatus from '../api/useStatus';
+import Loading from './Loading';
+import ErrorScreen from './Error';
+import { useNavigate } from 'react-router';
 
-interface StatusScreenProps {
-  status: SystemStatus;
-  onBack: () => void;
-  onRefresh: () => void;
-}
-
-export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRefresh }) => {
+export const StatusScreen: React.FC = () => {
+  const status = useStatus();
+  const navigate = useNavigate();
   const [testing, setTesting] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<any>(null);
-  const pumps = status.pumps || [];
+
+  if (status.isPending) {
+    return <Loading />;
+  }
+  if (status.isError || !status.data) {
+    return (
+      <ErrorScreen message="Failed to load system status. Please try again." />
+    );
+  }
+
+  const pumps = status.data.pumps || [];
 
   const handleTestAll = async () => {
     try {
@@ -22,7 +29,9 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ duration_seconds: 3 }),
       });
-      if (!response.ok) throw new Error('Test failed');
+      if (!response.ok) {
+        throw new Error('Test failed');
+      }
       alert('All pumps tested successfully');
     } catch (err) {
       console.error('Test all failed:', err);
@@ -35,10 +44,13 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
   const handleDiagnostics = async () => {
     try {
       const response = await fetch(`/api/v1/status/diagnostics`);
-      if (!response.ok) throw new Error('Diagnostics failed');
+      if (!response.ok) {
+        throw new Error('Diagnostics failed');
+      }
       const data = await response.json();
-      setDiagnostics(data);
-      alert(`Diagnostics:\nDatabase: ${data.database}\nArduino: ${data.arduino}\nPumps: ${data.pumps_ok}/${data.total_pumps}`);
+      alert(
+        `Diagnostics:\nDatabase: ${data.database}\nArduino: ${data.arduino}\nPumps: ${data.pumps_ok}/${data.total_pumps}`
+      );
     } catch (err) {
       console.error('Diagnostics failed:', err);
       alert('Diagnostics check failed');
@@ -55,8 +67,10 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
           <div className="status-info-grid">
             <div className="status-row">
               <span className="status-label">SYSTEM STATUS</span>
-              <span className={`status-value ${status.is_mixing ? 'warning' : 'success'}`}>
-                {status.is_mixing ? 'MIXING' : 'ONLINE'}
+              <span
+                className={`status-value ${status.data.is_mixing ? 'warning' : 'success'}`}
+              >
+                {status.data.is_mixing ? 'MIXING' : 'ONLINE'}
               </span>
             </div>
             <div className="status-row">
@@ -65,11 +79,15 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
             </div>
             <div className="status-row">
               <span className="status-label">COCKTAILS AVAILABLE</span>
-              <span className="status-value info">{pumps.filter(p => p.liquid).length} / 45</span>
+              <span className="status-value info">
+                {pumps.filter((p) => p.liquid).length} / 45
+              </span>
             </div>
             <div className="status-row">
               <span className="status-label">ACTIVE PUMPS</span>
-              <span className="status-value info">{pumps.filter(p => p.is_active).length} / {pumps.length}</span>
+              <span className="status-value info">
+                {pumps.filter((p) => p.is_active).length} / {pumps.length}
+              </span>
             </div>
           </div>
         </div>
@@ -79,15 +97,24 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
           <div className="pump-status-list">
             {pumps.map((pump) => (
               <div key={pump.id} className="pump-status-row">
-                <span className="pump-status-label">PUMP {pump.id} - {pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}</span>
-                <span className={`pump-status-value ${
-                  !pump.liquid ? 'error' :
-                  pump.liquid.toLowerCase().includes('low') ? 'warning' :
-                  'success'
-                }`}>
-                  {!pump.liquid ? 'NOT CONFIGURED' :
-                   pump.liquid.toLowerCase().includes('low') ? 'LOW LIQUID' :
-                   'READY'}
+                <span className="pump-status-label">
+                  PUMP {pump.id} -{' '}
+                  {pump.liquid ? pump.liquid.toUpperCase() : 'EMPTY'}
+                </span>
+                <span
+                  className={`pump-status-value ${
+                    !pump.liquid
+                      ? 'error'
+                      : pump.liquid.toLowerCase().includes('low')
+                        ? 'warning'
+                        : 'success'
+                  }`}
+                >
+                  {!pump.liquid
+                    ? 'NOT CONFIGURED'
+                    : pump.liquid.toLowerCase().includes('low')
+                      ? 'LOW LIQUID'
+                      : 'READY'}
                 </span>
               </div>
             ))}
@@ -96,16 +123,17 @@ export const StatusScreen: React.FC<StatusScreenProps> = ({ status, onBack, onRe
       </div>
 
       <div className="status-control-buttons">
-        <button className="kitt-button" onClick={onRefresh}>
-          REFRESH
-        </button>
         <button className="kitt-button orange" onClick={handleDiagnostics}>
           DIAGNOSTICS
         </button>
-        <button className="kitt-button yellow" onClick={handleTestAll} disabled={testing}>
+        <button
+          className="kitt-button yellow"
+          onClick={handleTestAll}
+          disabled={testing}
+        >
           {testing ? 'TESTING...' : 'TEST ALL'}
         </button>
-        <button className="kitt-button" onClick={onBack}>
+        <button className="kitt-button" onClick={() => navigate(-1)}>
           BACK
         </button>
       </div>

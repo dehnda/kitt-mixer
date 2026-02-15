@@ -1,17 +1,22 @@
 import React from 'react';
 import './MixingProgress.css';
+import useCancelMixing from '../api/useCancelMixing';
 
 interface MixingProgressProps {
   cocktailName: string;
   progress: number;
-  onCancel: () => void;
 }
 
 export const MixingProgress: React.FC<MixingProgressProps> = ({
   cocktailName,
   progress,
-  onCancel
 }) => {
+  const cancelMixing = useCancelMixing();
+
+  const onCancel = () => {
+    cancelMixing.mutate();
+  };
+
   return (
     <div className="mixing-overlay">
       <div className="mixing-modal">

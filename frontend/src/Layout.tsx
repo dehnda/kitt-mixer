@@ -1,5 +1,5 @@
 import useStatus from './api/useStatus';
-import './App.css';
+import './Layout.css';
 import { Outlet } from 'react-router';
 import Loading from './components/Loading';
 import ErrorScreen from './components/Error';

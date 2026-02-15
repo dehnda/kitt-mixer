@@ -37,7 +37,8 @@ async def lifespan(app: FastAPI):
     gpio_controller = GPIOController()
 
     # Intialize Arduino Service
-    arduino_port = os.getenv("ARDUINO_PORT") or find_arduino_port() or "/dev/ttyUSB0"
+    arduino_port = os.getenv(
+        "ARDUINO_PORT") or find_arduino_port() or "/dev/ttyUSB0"
     arduino_service = ArduinoService(port=arduino_port)
 
     # Try to connect to GPIO (non-blocking)
@@ -61,7 +62,8 @@ async def lifespan(app: FastAPI):
     # Load pump configurations from database
     pump_configs = db_service.get_pumps()
     for pump in pump_configs:
-        print(f"Configuring Pump ID {pump['id']}: {pump['ml_per_second']} ml/s, Liquid ID: {pump['liquid_id']}")
+        print(
+            f"Configuring Pump ID {pump['id']}: {pump['ml_per_second']} ml/s, Liquid ID: {pump['liquid_id']}")
         gpio_controller.set_pump_flow_rate(pump['id'], pump['ml_per_second'])
 
     # Initialize mixer service
@@ -118,23 +120,30 @@ def get_mixer_service():
 # Update routers to use dependency injection
 pumps.get_pumps.__defaults__ = (Depends(get_db_service),)
 pumps.get_pump.__defaults__ = (None, Depends(get_db_service))
-pumps.update_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_gpio_controller))
+pumps.update_pump.__defaults__ = (None, None, Depends(
+    get_db_service), Depends(get_gpio_controller))
 pumps.update_pump_liquid.__defaults__ = (None, None, Depends(get_db_service))
-pumps.test_pump.__defaults__ = (None, None, Depends(get_db_service), Depends(get_gpio_controller))
-pumps.stop_pump.__defaults__ = (None, Depends(get_db_service), Depends(get_gpio_controller))
+pumps.test_pump.__defaults__ = (None, None, Depends(
+    get_db_service), Depends(get_gpio_controller))
+pumps.stop_pump.__defaults__ = (None, Depends(
+    get_db_service), Depends(get_gpio_controller))
 pumps.stop_all_pumps.__defaults__ = (Depends(get_gpio_controller),)
-pumps.test_all_pumps.__defaults__ = (None, Depends(get_db_service), Depends(get_gpio_controller))
-pumps.purge_all_pumps.__defaults__ = (None, Depends(get_db_service), Depends(get_gpio_controller))
+pumps.test_all_pumps.__defaults__ = (None, Depends(
+    get_db_service), Depends(get_gpio_controller))
+pumps.purge_all_pumps.__defaults__ = (None, Depends(
+    get_db_service), Depends(get_gpio_controller))
 
 cocktails.get_all_cocktails.__defaults__ = (Depends(get_mixer_service),)
 cocktails.get_available_cocktails.__defaults__ = (Depends(get_mixer_service),)
-cocktails.get_cocktail.__defaults__ = (None, Depends(get_db_service))
+cocktails.get_cocktail.__defaults__ = (None, Depends(get_mixer_service))
 cocktails.make_cocktail.__defaults__ = (None, None, Depends(get_mixer_service))
 
-status.get_status.__defaults__ = (Depends(get_mixer_service), Depends(get_db_service), Depends(get_gpio_controller))
+status.get_status.__defaults__ = (Depends(get_mixer_service), Depends(
+    get_db_service), Depends(get_gpio_controller))
 status.cancel_mixing.__defaults__ = (Depends(get_mixer_service),)
 status.emergency_stop.__defaults__ = (Depends(get_mixer_service),)
-status.get_diagnostics.__defaults__ = (Depends(get_db_service), Depends(get_gpio_controller))
+status.get_diagnostics.__defaults__ = (
+    Depends(get_db_service), Depends(get_gpio_controller))
 
 liquids.get_all_liquids.__defaults__ = (Depends(get_db_service),)
 liquids.get_installed_liquids.__defaults__ = (Depends(get_db_service),)
@@ -181,7 +190,6 @@ if __name__ == "__main__":
         port=port,
         reload=debug
     )
-
 
 
 def find_arduino_port():

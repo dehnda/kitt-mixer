@@ -54,8 +54,6 @@ export const CocktailList: React.FC = () => {
     );
   }
 
-  console.log({ selectedCocktail: selectedCocktail.data });
-
   return (
     <div className="cocktail-list-page">
       <div className="display-screen">

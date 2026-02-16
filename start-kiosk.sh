@@ -86,8 +86,8 @@ done
 echo -e "${GREEN}Starting frontend server...${NC}"
 cd "$FRONTEND_DIR"
 
-# Use npm start for development (has better CORS handling)
-npm start > "$LOG_DIR/frontend.log" 2>&1 &
+# Use npm run preview
+npm run preview > "$LOG_DIR/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 echo -e "${GREEN}Frontend started (PID: $FRONTEND_PID)${NC}"
 

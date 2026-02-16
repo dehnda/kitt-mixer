@@ -58,7 +58,7 @@ export const ConfigScreen: React.FC = () => {
     }
   };
 
-  const handleLiquidChange = async (
+  /* const handleLiquidChange = async (
     pumpId: number,
     liquidId: number | null
   ) => {
@@ -113,7 +113,7 @@ export const ConfigScreen: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  };
+  };*/
 
   const startCalibration = async (pumpId: number, duration: number = 10) => {
     try {
@@ -291,6 +291,21 @@ export const ConfigScreen: React.FC = () => {
         className="config-screen"
       >
         <div className="loading-message">LOADING CONFIGURATION...</div>
+      </motion.div>
+    );
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="config-screen"
+      >
+        <div className="error-message">{error}</div>
+        <button className="kitt-button" onClick={loadConfig}>
+          RETRY
+        </button>
       </motion.div>
     );
   }

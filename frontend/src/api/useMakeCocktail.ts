@@ -2,12 +2,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from './client';
 import type { MakeCocktailRequest } from '../types';
 
+type Options = { name: string; size_multiplier: number };
+
 export default function useMakeCocktail() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ name, sizeMl }: { name: string; sizeMl: number }) => {
-      const request: MakeCocktailRequest = { size_ml: sizeMl };
+    mutationFn: async ({ name, size_multiplier }: Options) => {
+      const request: MakeCocktailRequest = { size_multiplier };
+
       await apiClient.post(
         `/cocktails/${encodeURIComponent(name)}/make`,
         request

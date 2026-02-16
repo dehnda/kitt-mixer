@@ -1,0 +1,87 @@
+/* K.I.T.T. themed slider */
+.kitt-slider {
+  cursor: pointer;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.kitt-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(180deg, #ff7722 0%, #ff5500 50%, #dd4400 100%);
+  border: 2px solid #ff0000;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow:
+    0 0 8px #ff0000,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s;
+  margin-top: -9px; /* (thumb height - track height) / 2 = (24 - 6) / 2 = 9 */
+}
+
+.kitt-slider::-webkit-slider-thumb:hover {
+  background: linear-gradient(180deg, #ff8833 0%, #ff6611 50%, #ee5500 100%);
+  box-shadow:
+    0 0 12px #ff3333,
+    0 2px 6px rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.kitt-slider::-webkit-slider-thumb:active {
+  background: linear-gradient(180deg, #ff6611 0%, #dd4400 50%, #cc3300 100%);
+  box-shadow:
+    0 0 15px #ff5500,
+    0 2px 4px rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+/* Firefox */
+.kitt-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(180deg, #ff7722 0%, #ff5500 50%, #dd4400 100%);
+  border: 2px solid #ff0000;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow:
+    0 0 8px #ff0000,
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s;
+}
+
+.kitt-slider::-moz-range-thumb:hover {
+  background: linear-gradient(180deg, #ff8833 0%, #ff6611 50%, #ee5500 100%);
+  box-shadow:
+    0 0 12px #ff3333,
+    0 2px 6px rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.kitt-slider::-moz-range-thumb:active {
+  background: linear-gradient(180deg, #ff6611 0%, #dd4400 50%, #cc3300 100%);
+  box-shadow:
+    0 0 15px #ff5500,
+    0 2px 4px rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+/* Track styling for Firefox */
+.kitt-slider::-moz-range-track {
+  background: linear-gradient(90deg, #660000 0%, #ff5500 50%, #660000 100%);
+  height: 6px;
+  border-radius: 2px;
+}
+
+.kitt-slider::-moz-range-progress {
+  background: linear-gradient(90deg, #660000 0%, #ff5500 100%);
+  height: 6px;
+  border-radius: 2px;
+}
+
+/* Track filled portion for Webkit */
+.kitt-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #660000 0%, #ff5500 50%, #660000 100%);
+  height: 6px;
+  border-radius: 2px;
+}

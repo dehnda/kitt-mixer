@@ -6,13 +6,11 @@ import { Outlet, useNavigate, useParams } from 'react-router';
 import useCocktail from '../api/useCocktail';
 import Loading from './Loading';
 import ErrorScreen from './Error';
-import useMakeCocktail from '../api/useMakeCocktail';
 
 export const CocktailList: React.FC = () => {
   const params = useParams<{ name: string }>();
   const selectedCocktail = useCocktail(params.name);
   const cocktails = useCocktails();
-  const makeCocktail = useMakeCocktail();
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState<'all' | 'available'>('available');
@@ -33,15 +31,6 @@ export const CocktailList: React.FC = () => {
       navigate('/cocktails');
     } else if (selectedCocktail?.data?.name !== cocktail.name) {
       navigate(`/cocktails/${cocktail.name}`);
-    }
-  };
-
-  const handleEngage = () => {
-    if (selectedCocktail && selectedCocktail.data?.can_make) {
-      makeCocktail.mutate({
-        name: selectedCocktail.data.name,
-        sizeMl: 200, // TODO - allow user to select size
-      });
     }
   };
 
@@ -77,14 +66,6 @@ export const CocktailList: React.FC = () => {
           <Outlet />
         </div>
       </div>
-
-      <button
-        className={`kitt-button large ${selectedCocktail?.data?.can_make ? 'green' : 'gray'}`}
-        onClick={handleEngage}
-        disabled={!selectedCocktail?.data?.can_make}
-      >
-        ▶ ENGAGE
-      </button>
 
       <div className="control-buttons">
         <button
